@@ -15,6 +15,7 @@ const parameters = {
         ambient: false,
         environment: {
             status: true,
+            background: false,
             url: './textures/environment/colosseum_1k.pic'
         }
     },
@@ -54,7 +55,7 @@ const lights = {
     },
     {
         type: 'sL',
-        name: 'Spot Light',
+        name: 'Spot Light1',
         position: {x:1, y:2, z :1},
         intensity: 110,
         shadow: true,
@@ -65,7 +66,8 @@ const lights = {
         penumbra: 0,
         helper: true,
         ui: true
-    } ]
+    }
+    ]
 }
 
 const stage = new Stage(parameters)
@@ -73,4 +75,4 @@ const stage = new Stage(parameters)
 stage.initScene()
 stage.initAnim()
 stage.addGLTF('./models/default.gltf')
-stage.initLights(lights)
+//stage.initLights(lights)

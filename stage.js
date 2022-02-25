@@ -141,6 +141,9 @@ function tick(){
     if(stats!=undefined) {
         stats.update()
     }
+    if(model){
+       // model.rotation.y += 0.01
+    }
     renderer.render(scene, camera)
     requestAnimationFrame(tick)
 }
@@ -203,6 +206,9 @@ function addEnvironment(parameters){
     texture.wrapP = THREE.RepeatWrapping
     texture.repeat.set( 1, 1 )
     scene.environment = texture
+    if(parameters.background) {
+        scene.background = texture
+    }
  })
 }
 
