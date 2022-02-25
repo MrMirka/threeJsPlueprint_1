@@ -105,6 +105,7 @@ class Stage{
             model = gltf.scene
             scene.add(model)
             camera.position.z = 6
+            updateAllmaterial()
         })
     }
 
@@ -119,6 +120,10 @@ class Stage{
                     case 'pL':
                         addPointLight(element)
                         break
+                      
+                    case 'dL':
+                        addDirectionLight(element)
+                        break    
                 }
             });
         }
@@ -222,14 +227,14 @@ function addPointLight(param) {
     )
     scene.add( light );
     if(param.helper) {
-        addHelper(param.type, light)
+        addHelper(param.type, light, param.color)
          }
     if(param.ui) {
         const folder = gui.addFolder(param.name)
         folder.add(light.position,'x').min(-10).max(10).step(0.01).name('position X')
         folder.add(light.position,'y').min(-10).max(10).step(0.01).name('position Y')
         folder.add(light.position,'z').min(-10).max(10).step(0.01).name('position Z')
-        folder.add(light,'intensity').min(0).max(300).step(3).name('intensity')
+        folder.add(light,'intensity').min(0).max(300).step(0.001).name('intensity')
         folder.add(light,'distance').min(0).max(10).step(0.001).name('distance')
         folder.add(light,'decay').min(0).max(10).step(0.001).name('decay')
         folder.addColor(color, 'color').onChange(()=>{
@@ -241,8 +246,32 @@ function addPointLight(param) {
 /**
  * Direction light
  * */
-function addDirectionLight(){
+function addDirectionLight(param){
+    const color = {color: param.color}
+    const directionalLight = new THREE.DirectionalLight()
+    directionalLight.color.set(color.color)
+    directionalLight.intensity = param.intensity
+    directionalLight.position.set(
+        param.position.x,
+        param.position.y,
+        param.position.z
+    )
+    directionalLight.lookAt(0,0,0)
+    scene.add( directionalLight )
+    if(param.helper){
+        addHelper(param.type, directionalLight, param.color)
+    }
 
+    if(param.ui) {
+        const folder = gui.addFolder(param.name)
+        folder.add(directionalLight.position,'x').min(-10).max(10).step(0.01).name('position X').onChange(()=>{directionalLight.lookAt(0,0,0)})
+        folder.add(directionalLight.position,'y').min(-10).max(10).step(0.01).name('position Y').onChange(()=>{directionalLight.lookAt(0,0,0)})
+        folder.add(directionalLight.position,'z').min(-10).max(10).step(0.01).name('position Z').onChange(()=>{directionalLight.lookAt(0,0,0)})
+        folder.add(directionalLight, 'intensity').min(0).max(300).step(0.02).name('intensity')
+        folder.addColor(color, 'color').onChange(()=>{
+            directionalLight.color.set(color.color)
+        })
+    }
 }    
     
 
@@ -250,15 +279,43 @@ function addDirectionLight(){
 /**
  * Helpers
  */  
-function addHelper(type, ligth){
+function addHelper(type, ligth, color){
     switch(type) {
         case 'pL':
             const sphereSize = 0.4
-            const pointLightHelper = new THREE.PointLightHelper( ligth, sphereSize )
+            const pointLightHelper = new THREE.PointLightHelper( ligth, sphereSize, color )
             scene.add( pointLightHelper )
+            break
+    
+        case 'dL':
+            const directionLighthelper = new THREE.DirectionalLightHelper( ligth, 2 );
+            scene.add( directionLighthelper );
             break
         }
     }
+/**
+ * Update AllMaterial
+ */
+ const updateAllmaterial = () => {
+    scene.traverse(child => {
+        if(child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial){
+            child.material.envMapIntensity = 0.05
+            child.material.needsUpdate = true
+            child.material.castShadow = true
+            child.material.receiveShadow = true
+            child.material.metalness = 1
+            child.material.roughness = 0.1
+            child.receiveShadow = true
+            child.castShadow = true
+            child.material.shadowSide = THREE.DoubleSide
+
+            //UI
+            const modelParam = gui.addFolder('Model')
+            modelParam.add(child.material, 'envMapIntensity').min(0).max(1).step(0.001).name('HDRI-intencity')
+        }
+        
+    })
+}    
 
 
 

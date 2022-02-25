@@ -14,7 +14,7 @@ const parameters = {
     light: {
         ambient: false,
         environment: {
-            status: false,
+            status: true,
             url: './textures/environment/colosseum_1k.pic'
         }
     },
@@ -37,6 +37,16 @@ const lights = {
         distance: 0,
         decay:1,
         color: 0xff0000,
+        helper: true,
+        ui: true
+    },
+   
+    {
+        type: 'dL',
+        name: 'PointLigth Three',
+        position: { x:0, y:2, z:0 },
+        intensity: 110,
+        color: 0x0000ff,
         helper: true,
         ui: true
     } ]
