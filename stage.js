@@ -124,6 +124,10 @@ class Stage{
                     case 'dL':
                         addDirectionLight(element)
                         break    
+
+                    case 'sL':
+                        addSpotLight(element)
+                        break
                 }
             });
         }
@@ -280,7 +284,64 @@ function addDirectionLight(param){
             directionalLight.color.set(color.color)
         })
     }
-}    
+}
+
+/**
+ * Spot light
+ */
+function addSpotLight(param){
+    const color = {color: param.color}
+    const spotLight = new THREE.SpotLight()
+    spotLight.intensity = param.intensity
+    spotLight.distance = param.distance
+    spotLight.angle = param.angle
+    spotLight.decay = param.decay
+    spotLight.penumbra = param.penumbra
+    spotLight.position.set(
+        param.position.x,
+        param.position.y,
+        param.position.z
+    )
+    spotLight.name = param.name
+
+    const targetGeo = new THREE.SphereGeometry(0.05, 15,15)
+    const targetMat = new THREE.MeshBasicMaterial({color: 'yellow'})
+    targetMat.transparent = true
+    targetMat.opacity = 0
+    const targetObject = new THREE.Mesh(targetGeo, targetMat)
+    scene.add(targetObject)
+
+    spotLight.target = targetObject
+    if(param.shadow){
+        spotLight.castShadow = true
+        spotLight.shadow.normalBias = 0.05
+    }
+    scene.add(spotLight)
+    if(param.helper) {
+        targetMat.transparent = true
+        targetMat.opacity = 1
+        addHelper(param.type, spotLight, param.color)
+    }
+    if(param.ui){
+        const folder = gui.addFolder(param.name)
+        folder.add(spotLight.position,'x').min(-10).max(10).step(0.01).name('position X').onChange(()=>{updateSpotLight()})
+        folder.add(spotLight.position,'y').min(-10).max(10).step(0.01).name('position Y').onChange(()=>{updateSpotLight()})
+        folder.add(spotLight.position,'z').min(-10).max(10).step(0.01).name('position Z').onChange(()=>{updateSpotLight()})
+
+        folder.add(targetObject.position,'x').min(-10).max(10).step(0.01).name('target X').onChange(()=>{updateSpotLight()})
+        folder.add(targetObject.position,'y').min(-10).max(10).step(0.01).name('target Y').onChange(()=>{updateSpotLight()})
+        folder.add(targetObject.position,'z').min(-10).max(10).step(0.01).name('target Z').onChange(()=>{updateSpotLight()})
+
+        folder.add(spotLight, 'intensity').min(0).max(300).step(0.01).name('intensity')
+        folder.add(spotLight, 'distance').min(0).max(30).step(0.01).name('distance')
+        folder.add(spotLight, 'decay').min(0).max(30).step(0.01).name('decay')
+        folder.add(spotLight, 'angle').min(0).max(Math.PI / 2).step(0.01).name('angle').onChange(()=>{updateSpotLight()})
+        folder.add(spotLight, 'penumbra').min(0).max(1).step(0.001).name('penumbra').onChange(()=>{updateSpotLight()})
+        folder.addColor(color, 'color').onChange(()=>{
+            spotLight.color.set(color.color)
+        })
+    }
+}
     
 
 
@@ -299,6 +360,10 @@ function addHelper(type, ligth, color){
             const directionLighthelper = new THREE.DirectionalLightHelper( ligth, 2 );
             scene.add( directionLighthelper );
             break
+
+        case 'sL':
+            const spotLightHelper = new THREE.SpotLightHelper( ligth );
+            scene.add( spotLightHelper );    
         }
     }
 /**
@@ -324,6 +389,14 @@ function addHelper(type, ligth, color){
         
     })
 }    
+
+const updateSpotLight = () => {
+    scene.traverse(child => {
+        if (child instanceof THREE.SpotLightHelper){
+            child.update()
+        }
+    })
+}
 
 
 

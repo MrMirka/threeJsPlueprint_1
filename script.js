@@ -51,6 +51,20 @@ const lights = {
         color: 0x0000ff,
         helper: true,
         ui: true
+    },
+    {
+        type: 'sL',
+        name: 'Spot Light',
+        position: {x:1, y:2, z :1},
+        intensity: 110,
+        shadow: true,
+        color: 0x00FF00,
+        decay: 1,
+        distance: 0,
+        angle: Math.PI / 6,
+        penumbra: 0,
+        helper: true,
+        ui: true
     } ]
 }
 
