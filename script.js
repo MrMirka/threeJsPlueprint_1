@@ -36,6 +36,7 @@ const lights = {
         intensity: 110,
         distance: 0,
         decay:1,
+        shadow: true,
         color: 0xff0000,
         helper: true,
         ui: true
@@ -46,6 +47,7 @@ const lights = {
         name: 'PointLigth Three',
         position: { x:0, y:2, z:0 },
         intensity: 110,
+        shadow: true,
         color: 0x0000ff,
         helper: true,
         ui: true

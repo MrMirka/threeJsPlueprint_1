@@ -225,6 +225,10 @@ function addPointLight(param) {
         param.position.y,
         param.position.z
     )
+    if(param.shadow){
+        light.castShadow = true
+        light.shadow.normalBias = 0.05
+    }
     scene.add( light );
     if(param.helper) {
         addHelper(param.type, light, param.color)
@@ -256,6 +260,10 @@ function addDirectionLight(param){
         param.position.y,
         param.position.z
     )
+    if(param.shadow){
+        directionalLight.castShadow = true
+        directionalLight.shadow.normalBias = 0.05
+    }
     directionalLight.lookAt(0,0,0)
     scene.add( directionalLight )
     if(param.helper){
