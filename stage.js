@@ -8,7 +8,7 @@ import * as dat from './lib/dat.gui.module.js'
 
 let scene, camera, renderer, orbitControl, model, stats, gui
 let clock = new THREE.Clock()
-let loader, barMesh
+let loader, barMesh, loaderCircleOut, loaderCircleIn
 
 class Stage{
     constructor(parameters) {
@@ -137,9 +137,11 @@ class Stage{
     }
 
     /**
-     * Loader
+     * Loaders
      */
-    initLoader(){
+
+    //Bar
+    initBarLoader(){
         const logo = new THREE.TextureLoader().load('./textures/loader/dota.png')
         logo.encoding = THREE.sRGBEncoding
         const geo = new THREE.PlaneGeometry(3,3,1,1)
@@ -149,13 +151,14 @@ class Stage{
             side:THREE.DoubleSide
         })
         loader = new THREE.Mesh(geo, mat)
+        loader.scale.set(0.5, 0.5, 0.5)
         scene.add(loader)
 
         //BAR
-        const barGeo = new THREE.BoxGeometry(0.22,0.02, 0.0001)
+         const barGeo = new THREE.BoxGeometry(0.25,0.02, 0.0001)
         const barMat = new THREE.MeshBasicMaterial({color: 0x81583D})
 
-        const barGeoBack = new THREE.BoxGeometry(2.35,0.02, 0.0001)
+        const barGeoBack = new THREE.BoxGeometry(2.55,0.02, 0.0001)
         const barMatBack = new THREE.MeshBasicMaterial({
             color: 0x81583D,
             transparent: true,
@@ -167,25 +170,81 @@ class Stage{
         barMesh.position.y = - 0.56
         barMeshBack.position.y = - 0.562
         barMeshBack.position.z =  -0.02
-        scene.add(barMesh, barMeshBack)
+        scene.add(barMesh, barMeshBack) 
         
+    }
+
+    //Circle
+    initCircleLoader(){
+        const logo = new THREE.TextureLoader().load('./textures/loader/dota.png')
+        logo.encoding = THREE.sRGBEncoding
+        const geo = new THREE.PlaneGeometry(3,3,1,1)
+        const mat = new THREE.MeshStandardMaterial({
+            map: logo,
+            transparent: true,
+            side:THREE.DoubleSide,
+            metalness: 1,
+            roughness: 0.6,
+            envMapIntensity: 0.001
+        })
+        loader = new THREE.Mesh(geo, mat)
+        const scaleFactor ={value: 0.5}
+        loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value)
+        const folder = gui.addFolder('Loader')
+        folder.add(scaleFactor, 'value').min(0).max(2).step(0.002).name('LogoSize').onChange(()=>{
+            loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value )
+        })
+        scene.add(loader)
+
+        const circleTexture1 = new THREE.TextureLoader().load('./textures/loader/circle_1.png')
+        const circleTexture2 = new THREE.TextureLoader().load('./textures/loader/circle_2.png')
+        circleTexture1.encoding = THREE.sRGBEncoding
+        circleTexture2.encoding = THREE.sRGBEncoding
+        const circleGeo = new THREE.PlaneGeometry(1,1)
+        const matCircle1 = new THREE.MeshBasicMaterial({
+            map: circleTexture1,
+            transparent: true,
+            side: THREE.DoubleSide,
+            opacity: 0.3
+        })
+        const matCircle2 = new THREE.MeshBasicMaterial({
+            map: circleTexture2,
+            transparent: true,
+            side: THREE.DoubleSide
+        })
+
+        loaderCircleOut = new THREE.Mesh(circleGeo, matCircle1)
+        loaderCircleIn = new THREE.Mesh(circleGeo, matCircle2)
+        const circleLoaders = new THREE.Group()
+        circleLoaders.add(loaderCircleOut, loaderCircleIn)
+        //circleLoaders.position.set(0,-1,0.2)
+        circleLoaders.scale.set(2.8,2.8,2.8)
+        scene.add(circleLoaders)
     }
 }
 
 function tick(){
 
     const elapsedTime = clock.getElapsedTime()
-
-    if(barMesh != undefined) {
-    
-        
+    const deltaTime = clock.getDelta()
+    console.log(deltaTime)
+   /*  if(barMesh != undefined) {
         barMesh.position.x = Math.sin(elapsedTime * 2)
-        barMesh.scale.x = Math.abs(Math.sin(elapsedTime * 2)) * 0.5 + 1
-       
+        barMesh.scale.x = Math.abs(Math.sin(elapsedTime * 2)) * 1.1 + 1
+    } */
+
+    if(loaderCircleOut!=undefined && loaderCircleIn!=undefined) {
+        //loaderCircleOut.rotation.z = Math.sin(elapsedTime * 2)
+       // loaderCircleIn.rotation.z += Math.cos(elapsedTime * 2) * 0.2
+        loaderCircleOut.rotation.z -= 0.06 + deltaTime 
+        loaderCircleIn.rotation.z -= 0.08 + deltaTime 
     }
 
     if(loader!=undefined) {
-        loader.rotation.y = Math.sin(elapsedTime * 2) * Math.PI / 6
+        loader.rotation.y = Math.sin(elapsedTime * 2) * Math.PI / 9
+        //loader.rotation.y += 0.05
+        //loader.rotation.z = Math.sin(elapsedTime) * Math.PI / 10
+        //loader.rotation.x = Math.cos(elapsedTime) * Math.PI / 10
     }
 
     if(orbitControl!=undefined){
@@ -368,6 +427,7 @@ function addSpotLight(param){
     targetMat.transparent = true
     targetMat.opacity = 0
     const targetObject = new THREE.Mesh(targetGeo, targetMat)
+    targetObject.position.z = 0.46
     scene.add(targetObject)
 
     spotLight.target = targetObject
