@@ -14,7 +14,7 @@ const parameters = {
     light: {
         ambient: false,
         environment: {
-            status: true,
+            status: false,
             background: false,
             url: './textures/environment/colosseum_1k.pic'
         }
@@ -74,5 +74,6 @@ const stage = new Stage(parameters)
 
 stage.initScene()
 stage.initAnim()
-stage.addGLTF('./models/default.gltf')
+stage.initLoader()
+//stage.addGLTF('./models/default.gltf')
 //stage.initLights(lights)

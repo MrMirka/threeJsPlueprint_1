@@ -7,6 +7,8 @@ import Stats  from './lib/three/examples/jsm/libs/stats.module.js'
 import * as dat from './lib/dat.gui.module.js'
 
 let scene, camera, renderer, orbitControl, model, stats, gui
+let clock = new THREE.Clock()
+let loader, barMesh
 
 class Stage{
     constructor(parameters) {
@@ -16,6 +18,7 @@ class Stage{
     initScene(){
             scene  = new THREE.Scene()
             camera = new THREE.PerspectiveCamera(this.parameters.camera.fov, this.parameters.canvas.width / this.parameters.canvas.height, 1, 100 )
+            camera.position.z = 6
             scene.add(camera)
 
             /**
@@ -132,9 +135,59 @@ class Stage{
             });
         }
     }
+
+    /**
+     * Loader
+     */
+    initLoader(){
+        const logo = new THREE.TextureLoader().load('./textures/loader/dota.png')
+        logo.encoding = THREE.sRGBEncoding
+        const geo = new THREE.PlaneGeometry(3,3,1,1)
+        const mat = new THREE.MeshBasicMaterial({
+            map: logo,
+            transparent: true,
+            side:THREE.DoubleSide
+        })
+        loader = new THREE.Mesh(geo, mat)
+        scene.add(loader)
+
+        //BAR
+        const barGeo = new THREE.BoxGeometry(0.22,0.02, 0.0001)
+        const barMat = new THREE.MeshBasicMaterial({color: 0x81583D})
+
+        const barGeoBack = new THREE.BoxGeometry(2.35,0.02, 0.0001)
+        const barMatBack = new THREE.MeshBasicMaterial({
+            color: 0x81583D,
+            transparent: true,
+            opacity: 0.3
+        })
+
+        barMesh = new THREE.Mesh(barGeo, barMat)
+        const barMeshBack = new THREE.Mesh(barGeoBack, barMatBack)
+        barMesh.position.y = - 0.56
+        barMeshBack.position.y = - 0.562
+        barMeshBack.position.z =  -0.02
+        scene.add(barMesh, barMeshBack)
+        
+    }
 }
 
 function tick(){
+
+    const elapsedTime = clock.getElapsedTime()
+
+    if(barMesh != undefined) {
+    
+        
+        barMesh.position.x = Math.sin(elapsedTime * 2)
+        barMesh.scale.x = Math.abs(Math.sin(elapsedTime * 2)) * 0.5 + 1
+       
+    }
+
+    if(loader!=undefined) {
+        loader.rotation.y = Math.sin(elapsedTime * 2) * Math.PI / 6
+    }
+
     if(orbitControl!=undefined){
         orbitControl.update()
     }
