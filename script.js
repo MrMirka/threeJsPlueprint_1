@@ -73,8 +73,8 @@ const lights = {
 const stage = new Stage(parameters)
 
 stage.initScene()
+stage.initLoadingManager()
 stage.initAnim()
-//stage.initBarLoader()
 stage.initCircleLoader()
-//stage.addGLTF('./models/default.gltf')
+stage.addGLTF('./models/default.gltf')
 stage.initLights(lights)
