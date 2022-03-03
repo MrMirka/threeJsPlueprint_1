@@ -9,7 +9,8 @@ const parameters = {
         testGeometry: false,
         axesHelper: false,
         grid: false,
-        fps: true
+        fps: false,
+        gui: false
     },
     light: {
         ambient: false,

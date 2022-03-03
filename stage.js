@@ -6,10 +6,12 @@ import { RGBELoader } from './lib/three/examples/jsm/loaders/RGBELoader.js'
 import Stats  from './lib/three/examples/jsm/libs/stats.module.js'
 import * as dat from './lib/dat.gui.module.js'
 
+
 let scene, camera, renderer, orbitControl, model, stats, gui
 let clock = new THREE.Clock()
 let loader, barMesh, loaderCircleOut, loaderCircleIn
 let loadingManager
+let matLogo,  matCircleOut, matCircleIn
 
 class Stage{
     constructor(parameters) {
@@ -21,6 +23,7 @@ class Stage{
      */
     initLoadingManager(){
         loadingManager = new THREE.LoadingManager(()=>{
+            scene.add(model)
             window.setTimeout(() => {   
                 let logo, circle
                scene.children.forEach(item=>{
@@ -30,11 +33,20 @@ class Stage{
                     logo = item
                 }
                })
-               scene.remove(logo)
-               scene.remove(circle)
-               scene.add(model)
-               updateAllmaterial()
-            }, 500);
+               //Hide loader
+               gsap.to(matLogo, {duration: 1, opacity: 0, onComplete: () => {
+                   scene.remove(logo)
+               }})
+               gsap.to(matCircleOut, {duration: 1, opacity: 0, onComplete: () => {
+                    scene.remove(circle)
+               }})
+               gsap.to(matCircleIn, {duration: 1, opacity: 0})
+
+               //Release model
+               gsap.to(model.scale, { duration: 1, delay: 0.3, x: 1, y:1, z: 1, onStart: ()=> {
+                 updateAllmaterial()
+               } })
+            }, 3000);
         })
     }
 
@@ -65,7 +77,10 @@ class Stage{
             renderer.render(scene, camera)
 
             //Ui
-            gui = new dat.GUI()
+            if(this.parameters.utils.gui) {
+                gui = new dat.GUI()
+            }
+            
 
             //Add test geometry
             if(this.parameters.utils.testGeometry) {
@@ -129,9 +144,10 @@ class Stage{
         const gltfLoader = new GLTFLoader(loadingManager)
         gltfLoader.setDRACOLoader(dracoLoader)
         gltfLoader.load(url, gltf => {
-            model = gltf.scene
+            model = gltf.scene.children[0]
+            model.name = 'GLTF'
+            model.scale.set(0)
             camera.position.z = 6
-            //updateAllmaterial()
         })
     }
 
@@ -202,7 +218,7 @@ class Stage{
         const logo = new THREE.TextureLoader(loadingManager).load('./textures/loader/dota.png')
         logo.encoding = THREE.sRGBEncoding
         const geo = new THREE.PlaneGeometry(3,3,1,1)
-        const mat = new THREE.MeshStandardMaterial({
+        matLogo = new THREE.MeshStandardMaterial({
             map: logo,
             transparent: true,
             side:THREE.DoubleSide,
@@ -210,14 +226,21 @@ class Stage{
             roughness: 0.6,
             envMapIntensity: 0.01
         })
-        loader = new THREE.Mesh(geo, mat)
+        loader = new THREE.Mesh(geo, matLogo)
         loader.name = 'logo_loader'
         const scaleFactor ={value: 0.5}
         loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value)
-        const folder = gui.addFolder('Loader')
-         folder.add(scaleFactor, 'value').min(0).max(2).step(0.002).name('LogoSize').onChange(()=>{
-            loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value )
-        }) 
+
+        /**
+         * Debug
+         */
+        if(gui!=undefined) {
+            const folder = gui.addFolder('Loader')
+            folder.add(scaleFactor, 'value').min(0).max(2).step(0.002).name('LogoSize').onChange(()=>{
+                loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value )
+            })
+        }
+         
         scene.add(loader)
 
         const circleTexture1 = new THREE.TextureLoader(loadingManager).load('./textures/loader/circle_1.png')
@@ -225,20 +248,20 @@ class Stage{
         circleTexture1.encoding = THREE.sRGBEncoding
         circleTexture2.encoding = THREE.sRGBEncoding
         const circleGeo = new THREE.PlaneGeometry(1,1)
-        const matCircle1 = new THREE.MeshBasicMaterial({
+        matCircleOut = new THREE.MeshBasicMaterial({
             map: circleTexture1,
             transparent: true,
             side: THREE.DoubleSide,
             opacity: 0.3
         })
-        const matCircle2 = new THREE.MeshBasicMaterial({
+        matCircleIn = new THREE.MeshBasicMaterial({
             map: circleTexture2,
             transparent: true,
             side: THREE.DoubleSide
         })
 
-        loaderCircleOut = new THREE.Mesh(circleGeo, matCircle1)
-        loaderCircleIn = new THREE.Mesh(circleGeo, matCircle2)
+        loaderCircleOut = new THREE.Mesh(circleGeo, matCircleOut)
+        loaderCircleIn = new THREE.Mesh(circleGeo, matCircleIn)
         const circleLoaders = new THREE.Group()
         circleLoaders.name = 'circle_loader'
         circleLoaders.add(loaderCircleOut, loaderCircleIn)
@@ -254,8 +277,8 @@ function tick(){
    
     //Circle loader
     if(loaderCircleOut!=undefined && loaderCircleIn!=undefined) {
-        loaderCircleOut.rotation.z -= 0.06 + deltaTime 
-        loaderCircleIn.rotation.z -= 0.08 + deltaTime 
+        loaderCircleOut.rotation.z -= 0.015 + deltaTime 
+        loaderCircleIn.rotation.z -= 0.04 + deltaTime 
     }
 
     if(loader!=undefined) {
@@ -268,9 +291,7 @@ function tick(){
     if(stats!=undefined) {
         stats.update()
     }
-    if(model){
-       // model.rotation.y += 0.01
-    }
+
     renderer.render(scene, camera)
     requestAnimationFrame(tick)
 }
@@ -370,7 +391,7 @@ function addPointLight(param) {
     if(param.helper) {
         addHelper(param.type, light, param.color)
          }
-    if(param.ui) {
+    if(gui!=undefined && param.ui) {
         const folder = gui.addFolder(param.name)
         folder.add(light.position,'x').min(-10).max(10).step(0.01).name('position X')
         folder.add(light.position,'y').min(-10).max(10).step(0.01).name('position Y')
@@ -407,7 +428,7 @@ function addDirectionLight(param){
         addHelper(param.type, directionalLight, param.color)
     }
 
-    if(param.ui) {
+    if(gui!=undefined && param.ui) {
         const folder = gui.addFolder(param.name)
         folder.add(directionalLight.position,'x').min(-10).max(10).step(0.01).name('position X').onChange(()=>{directionalLight.lookAt(0,0,0)})
         folder.add(directionalLight.position,'y').min(-10).max(10).step(0.01).name('position Y').onChange(()=>{directionalLight.lookAt(0,0,0)})
@@ -456,7 +477,7 @@ function addSpotLight(param){
         targetMat.opacity = 1
         addHelper(param.type, spotLight, param.color)
     }
-    if(param.ui){
+    if(gui!=undefined && param.ui){
         const folder = gui.addFolder(param.name)
         folder.add(spotLight.position,'x').min(-10).max(10).step(0.01).name('position X').onChange(()=>{updateSpotLight()})
         folder.add(spotLight.position,'y').min(-10).max(10).step(0.01).name('position Y').onChange(()=>{updateSpotLight()})
@@ -504,10 +525,9 @@ function addHelper(type, ligth, color){
  * Update AllMaterial
  */
  const updateAllmaterial = () => {
-    let modelParam = gui.addFolder('Model')
     scene.traverse(child => {
-        if(child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial){
-            child.material.envMapIntensity = 0.05
+        if(child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial && child.name == 'GLTF'){
+            child.material.envMapIntensity = 0.15
             child.material.needsUpdate = true
             child.material.castShadow = true
             child.material.receiveShadow = true
@@ -517,14 +537,17 @@ function addHelper(type, ligth, color){
             child.castShadow = true
             child.material.shadowSide = THREE.DoubleSide
 
-            modelParam.add(child.material, 'envMapIntensity').min(0).max(1).step(0.001).name('HDRI-intencity')
-            
-            
+            if(gui!=undefined){
+                let modelParam = gui.addFolder('Model')
+                modelParam.add(child.material, 'envMapIntensity').min(0).max(1).step(0.001).name('HDRI-intencity')
+             }
         }
-        
     })
 }    
 
+/**
+ * Update parameters light
+ */
 const updateSpotLight = () => {
     scene.traverse(child => {
         if (child instanceof THREE.SpotLightHelper){
@@ -532,12 +555,6 @@ const updateSpotLight = () => {
         }
     })
 }
-
-
- 
-
-
-
 
 
 export {Stage}
