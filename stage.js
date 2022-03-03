@@ -215,7 +215,7 @@ class Stage{
 
     //Circle
     initCircleLoader(){
-        const logo = new THREE.TextureLoader(loadingManager).load('./textures/loader/dota.png')
+        const logo = new THREE.TextureLoader(loadingManager).load('./textures/loader/dota_text.png')
         logo.encoding = THREE.sRGBEncoding
         const geo = new THREE.PlaneGeometry(3,3,1,1)
         matLogo = new THREE.MeshStandardMaterial({
