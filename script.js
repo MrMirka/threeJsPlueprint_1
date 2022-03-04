@@ -2,6 +2,7 @@ import {Stage} from './stage.js'
 
 const canvas = document.querySelector('canvas.webgl')
 
+
 const parameters = {
     utils: {
         orbitControl: false,
@@ -78,3 +79,4 @@ stage.initAnim()
 stage.initCircleLoader()
 stage.addGLTF('./models/default.gltf')
 stage.initLights(lights)
+stage.initMouseListener()

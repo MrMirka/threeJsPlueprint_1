@@ -12,6 +12,10 @@ let clock = new THREE.Clock()
 let loader, barMesh, loaderCircleOut, loaderCircleIn
 let loadingManager
 let matLogo,  matCircleOut, matCircleIn
+let cameraRig = new THREE.Group()
+
+//Mouse coordinate
+let mouseXY = new THREE.Vector2(0,0)
 
 class Stage{
     constructor(parameters) {
@@ -22,8 +26,8 @@ class Stage{
      * LoadingManager
      */
     initLoadingManager(){
-        loadingManager = new THREE.LoadingManager(()=>{
-            scene.add(model)
+        loadingManager = new THREE.LoadingManager(()=>{  
+            cameraRig.add(model)
             window.setTimeout(() => {   
                 let logo, circle
                scene.children.forEach(item=>{
@@ -52,9 +56,13 @@ class Stage{
 
     initScene(){
             scene  = new THREE.Scene()
+            scene.add(cameraRig)
             camera = new THREE.PerspectiveCamera(this.parameters.camera.fov, this.parameters.canvas.width / this.parameters.canvas.height, 1, 100 )
+            
+            cameraRig.add(camera)
             camera.position.z = 6
             scene.add(camera)
+            
 
             /**
              * Render
@@ -73,8 +81,24 @@ class Stage{
             renderer.toneMapping = THREE.ACESFilmicToneMapping
             renderer.toneMappingExposure = 1
             renderer.logarithmicDepthBuffer = true
-
             renderer.render(scene, camera)
+
+            /**
+             * Resize screen
+             */
+            window.addEventListener('resize', ()=>{
+                // Update sizes
+                this.parameters.canvas.width = window.innerWidth
+                this.parameters.canvas.height = window.innerHeight
+            
+                // Update camera
+                camera.aspect = this.parameters.canvas.width /  this.parameters.canvas.height
+                camera.updateProjectionMatrix()
+            
+                // Update renderer
+                renderer.setSize(this.parameters.canvas.width,  this.parameters.canvas.height)
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+            })
 
             //Ui
             if(this.parameters.utils.gui) {
@@ -268,6 +292,17 @@ class Stage{
         circleLoaders.scale.set(2.8,2.8,2.8)
         scene.add(circleLoaders)
     }
+
+    /**
+     * Mouse listener
+     */
+    initMouseListener(){
+        window.addEventListener('mousemove', event => {
+            let x = ( event.clientX - this.parameters.canvas.width / 2 ) * 0.0004
+            let y = ( event.clientY - this.parameters.canvas.height / 2 ) * 0.0004
+            mouseXY.set(x,y)
+        })
+    }
 }
 
 function tick(){
@@ -292,6 +327,12 @@ function tick(){
         stats.update()
     }
 
+    //Models
+    if(model!=undefined){
+        cameraRig.rotation.x += ( mouseXY.y * 0.3 - cameraRig.rotation.x * 0.4 ) * 0.3
+	    cameraRig.rotation.y += ( mouseXY.x  * 0.5 - cameraRig.rotation.y * 0.3 ) * 0.5
+    }
+    
     renderer.render(scene, camera)
     requestAnimationFrame(tick)
 }
