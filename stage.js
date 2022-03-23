@@ -7,7 +7,7 @@ import Stats  from './lib/three/examples/jsm/libs/stats.module.js'
 import * as dat from './lib/dat.gui.module.js'
 
 
-let scene, camera, renderer, orbitControl, model, stats, gui
+let scene, camera, renderer, orbitControl, model, stats, gui, mixer
 let clock = new THREE.Clock()
 let loader, barMesh, loaderCircleOut, loaderCircleIn
 let loadingManager
@@ -46,8 +46,8 @@ class Stage{
                }})
                gsap.to(matCircleIn, {duration: 1, opacity: 0})
 
-               //Release model
-               gsap.to(model.scale, { duration: 1, delay: 0.3, x: 1, y:1, z: 1, onStart: ()=> {
+               //Releaze model
+               gsap.to(model.scale, { duration: 1, delay: 0.3, x: 250, y:250, z: 250, onStart: ()=> {
                  updateAllmaterial()
                } })
             }, 3000);
@@ -166,12 +166,20 @@ class Stage{
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
         const gltfLoader = new GLTFLoader(loadingManager)
-        gltfLoader.setDRACOLoader(dracoLoader)
+        //gltfLoader.setDRACOLoader(dracoLoader)
         gltfLoader.load(url, gltf => {
-            model = gltf.scene.children[0]
+            model = gltf.scene
             model.name = 'GLTF'
             model.scale.set(0)
+            model.position.y = -4
             camera.position.z = 6
+
+            //Animate RIG
+            const animations = gltf.animations
+            console.log(animations)
+            mixer = new THREE.AnimationMixer( model )
+            mixer.clipAction(animations[0]).play()
+            scene.add(model)
         })
     }
 
@@ -307,8 +315,13 @@ class Stage{
 
 function tick(){
 
-    const elapsedTime = clock.getElapsedTime()
+    //const elapsedTime = clock.getElapsedTime()
     const deltaTime = clock.getDelta()
+    console.log(deltaTime)
+    if(mixer!=undefined) {
+        console.log(deltaTime)
+		mixer.update( deltaTime );
+	}
    
     //Circle loader
     if(loaderCircleOut!=undefined && loaderCircleIn!=undefined) {
@@ -317,7 +330,7 @@ function tick(){
     }
 
     if(loader!=undefined) {
-        loader.rotation.y = Math.sin(elapsedTime * 2) * Math.PI / 9
+        loader.rotation.y = Math.sin(deltaTime * 20) * Math.PI / 9
     }
 
     if(orbitControl!=undefined){
@@ -567,21 +580,30 @@ function addHelper(type, ligth, color){
  */
  const updateAllmaterial = () => {
     scene.traverse(child => {
-        if(child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial && child.name == 'GLTF'){
-            child.material.envMapIntensity = 0.15
-            child.material.needsUpdate = true
-            child.material.castShadow = true
-            child.material.receiveShadow = true
-            child.material.metalness = 1
-            child.material.roughness = 0.1
-            child.receiveShadow = true
-            child.castShadow = true
-            child.material.shadowSide = THREE.DoubleSide
-
-            if(gui!=undefined){
-                let modelParam = gui.addFolder('Model')
-                modelParam.add(child.material, 'envMapIntensity').min(0).max(1).step(0.001).name('HDRI-intencity')
-             }
+        
+        if(child.name == 'GLTF'){
+            child.traverse(item => {
+               
+                if(item instanceof THREE.Mesh && item.material instanceof THREE.MeshStandardMaterial){
+                    item.material.envMapIntensity = 0.01
+                    item.material.needsUpdate = true
+                    item.material.castShadow = true
+                    item.material.receiveShadow = true
+                    item.material.metalness = 0
+                    //item.material.roughness = 0.1
+                    item.receiveShadow = true
+                    item.castShadow = true
+                    item.material.shadowSide = THREE.DoubleSide
+                    
+    
+                   /*  if(gui!=undefined){
+                        let modelParam = gui.addFolder('Model')
+                        modelParam.add(item.material, 'envMapIntensity').min(0).max(1).step(0.001).name('HDRI-intencity')
+                    } */
+                }
+            })
+            
+            
         }
     })
 }    

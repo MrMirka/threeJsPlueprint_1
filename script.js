@@ -10,7 +10,7 @@ const parameters = {
         axesHelper: false,
         grid: false,
         fps: false,
-        gui: false
+        gui: true
     },
     light: {
         ambient: false,
@@ -65,7 +65,7 @@ const lights = {
         distance: 0,
         angle: 0.46,
         penumbra: 0.754,
-        helper: false,
+        helper: true,
         ui: true
     }
     ]
@@ -77,6 +77,6 @@ stage.initScene()
 stage.initLoadingManager()
 stage.initAnim()
 stage.initCircleLoader()
-stage.addGLTF('./models/default.gltf')
+stage.addGLTF('./models/invoker/character.gltf')
 stage.initLights(lights)
 stage.initMouseListener()
