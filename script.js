@@ -9,13 +9,13 @@ const parameters = {
         testGeometry: false,
         axesHelper: false,
         grid: false,
-        fps: false,
+        fps: true,
         gui: true
     },
     light: {
         ambient: false,
         environment: {
-            status: true,
+            status: false,
             background: false,
             url: './textures/environment/colosseum_1k.pic'
         }
@@ -40,8 +40,8 @@ const lights = {
         decay:1,
         shadow: true,
         color: 0xff0000,
-        helper: false,
-        ui: false
+        helper: true,
+        ui: true
     },
    
     {
@@ -80,3 +80,4 @@ stage.initCircleLoader()
 stage.addGLTF('./models/invoker/character.gltf')
 stage.initLights(lights)
 stage.initMouseListener()
+//stage.initPostprocess()

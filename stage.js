@@ -6,13 +6,29 @@ import { RGBELoader } from './lib/three/examples/jsm/loaders/RGBELoader.js'
 import Stats  from './lib/three/examples/jsm/libs/stats.module.js'
 import * as dat from './lib/dat.gui.module.js'
 
+//Postprocessing
+import { EffectComposer } from './lib/three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from './lib/three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from './lib/three/examples/jsm/postprocessing/UnrealBloomPass.js'
 
-let scene, camera, renderer, orbitControl, model, stats, gui, mixer
+
+let scene, camera, renderer, orbitControl, model, stats, gui, mixer, compose
 let clock = new THREE.Clock()
 let loader, barMesh, loaderCircleOut, loaderCircleIn
 let loadingManager
 let matLogo,  matCircleOut, matCircleIn
 let cameraRig = new THREE.Group()
+let orbOne, orbTwo, orb1, orb4, orb5, orbThree, orbMat, orbMat1, orbMat2, orbMat3, orbMat4, orbMat5
+let noiseStep = 0.1
+
+//Compose param
+let isCompose = false
+ const bloom = {
+     exposure:0.1,
+     bloomStrength: 0.9,
+     bloomThreshold: 0.01,
+     bloomRadius: 6
+ }
 
 //Mouse coordinate
 let mouseXY = new THREE.Vector2(0,0)
@@ -47,13 +63,16 @@ class Stage{
                gsap.to(matCircleIn, {duration: 1, opacity: 0})
 
                //Releaze model
-               gsap.to(model.scale, { duration: 1, delay: 0.3, x: 250, y:250, z: 250, onStart: ()=> {
+               gsap.to(model.scale, { duration: 1, delay: 0.3, x: 350, y:350, z: 350, onStart: ()=> {
                  updateAllmaterial()
                } })
             }, 3000);
         })
     }
 
+    /**
+     * Scene
+     */
     initScene(){
             scene  = new THREE.Scene()
             scene.add(cameraRig)
@@ -70,7 +89,7 @@ class Stage{
             renderer = new THREE.WebGLRenderer({
                 canvas: this.parameters.canvas.canvas,
                 antialias: true,
-                alpha: false
+                alpha: true
             })
             renderer.setSize(this.parameters.canvas.width, this.parameters.canvas.height)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -150,7 +169,37 @@ class Stage{
 
         }
 
-
+    /**
+     * Postpoces
+     */
+    initPostprocess(){
+        compose = new EffectComposer(renderer)
+        compose.addPass( new RenderPass( scene, camera ) )
+        
+        //Bloom
+        const bloomPass = new UnrealBloomPass(
+                 new THREE.Vector2(this.parameters.canvas.width, this.parameters.canvas.height),
+                 1.5,
+                 0.4,
+                 0.85
+            )
+        bloomPass.threshold = bloom.bloomThreshold
+        bloomPass.strength = bloom.bloomStrength
+        bloomPass.radius = bloom.bloomRadius 
+        
+        compose.addPass(bloomPass)
+        isCompose = true
+        gui.add(bloom, 'bloomThreshold').min(0).max(1).step(0.003).onChange(value => {
+            bloomPass.threshold = value
+        })
+        gui.add(bloom, 'bloomStrength').min(0).max(3).step(0.003).onChange(value => {
+            bloomPass.strength = value
+        })
+        gui.add(bloom, 'bloomRadius').min(0).max(20).step(0.003).onChange(value => {
+            bloomPass.radius = value
+        })
+    }
+    
     /**
      * Init animation
      */
@@ -163,6 +212,15 @@ class Stage{
      * Add GLTF to scene
      */
     addGLTF(url) {
+
+        initOrbs()
+       
+        initOrbs5()
+        initOrbs4()
+        initOrbs3()
+        initOrbs2()
+        initOrbs1()
+        
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
         const gltfLoader = new GLTFLoader(loadingManager)
@@ -171,7 +229,7 @@ class Stage{
             model = gltf.scene
             model.name = 'GLTF'
             model.scale.set(0)
-            model.position.y = -4
+            model.position.y = -6
             camera.position.z = 6
 
             //Animate RIG
@@ -180,6 +238,8 @@ class Stage{
             mixer = new THREE.AnimationMixer( model )
             mixer.clipAction(animations[0]).play()
             scene.add(model)
+
+            
         })
     }
 
@@ -317,11 +377,24 @@ function tick(){
 
     //const elapsedTime = clock.getElapsedTime()
     const deltaTime = clock.getDelta()
-    console.log(deltaTime)
     if(mixer!=undefined) {
-        console.log(deltaTime)
 		mixer.update( deltaTime );
 	}
+
+    if(orbMat!=undefined){
+        noiseStep += 0.01
+        orbMat.uniforms[ 'time' ].value = noiseStep
+        
+
+        orbMat1.alphaMap.rotation +=0.002
+        orbMat2.alphaMap.rotation +=0.002            
+        orbMat3.alphaMap.rotation +=0.0005
+        orbMat4.alphaMap.rotation +=0.0003
+        orbMat5.alphaMap.rotation +=0.0002
+       
+        
+    }
+    
    
     //Circle loader
     if(loaderCircleOut!=undefined && loaderCircleIn!=undefined) {
@@ -346,7 +419,11 @@ function tick(){
 	    cameraRig.rotation.y += ( mouseXY.x  * 0.5 - cameraRig.rotation.y * 0.3 ) * 0.5
     }
     
-    renderer.render(scene, camera)
+    if(isCompose){
+        compose.render()
+    }else{
+        renderer.render(scene, camera)
+    }
     requestAnimationFrame(tick)
 }
 /**
@@ -541,7 +618,7 @@ function addSpotLight(param){
         folder.add(targetObject.position,'y').min(-10).max(10).step(0.01).name('target Y').onChange(()=>{updateSpotLight()})
         folder.add(targetObject.position,'z').min(-10).max(10).step(0.01).name('target Z').onChange(()=>{updateSpotLight()})
 
-        folder.add(spotLight, 'intensity').min(0).max(300).step(0.01).name('intensity')
+        folder.add(spotLight, 'intensity').min(0).max(3000).step(0.01).name('intensity')
         folder.add(spotLight, 'distance').min(0).max(30).step(0.01).name('distance')
         folder.add(spotLight, 'decay').min(0).max(30).step(0.01).name('decay')
         folder.add(spotLight, 'angle').min(0).max(Math.PI / 2).step(0.01).name('angle').onChange(()=>{updateSpotLight()})
@@ -617,6 +694,292 @@ const updateSpotLight = () => {
             child.update()
         }
     })
+}
+
+
+/**
+ * Orbs light effect
+ */
+const initOrbs = () => {
+    const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
+    orbMat = new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: noiseStep } 
+        },
+        vertexShader:`
+                varying vec2 vUv;
+
+                void main()
+                {
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                
+                    vUv = uv;
+                }
+            `,
+            fragmentShader: `
+
+                 #define PI 3.1415926535897932384626433832795
+
+                 varying vec2 vUv;
+                 uniform float time;
+                 float random(vec2 st)
+                    {
+                        return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+                    }
+
+                vec2 rotate(vec2 uv, float rotation, vec2 mid)
+                    {
+                        return vec2(
+                        cos(rotation) * (uv.x - mid.x) + sin(rotation) * (uv.y - mid.y) + mid.x,
+                        cos(rotation) * (uv.y - mid.y) - sin(rotation) * (uv.x - mid.x) + mid.y
+                        );
+                    }
+
+                    vec4 permute(vec4 x)
+                    {
+                        return mod(((x*34.0)+1.0)*x, 289.0);
+                    }
+                    
+                    vec2 fade(vec2 t)
+                    {
+                        return t*t*t*(t*(t*6.0-15.0)+10.0);
+                    }
+                    
+                    //Noise 1
+                    float cnoise(vec2 P, float time)
+                    {
+                        vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+                        vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+                        Pi = mod(Pi, 289.0); // To avoid truncation effects in permutation
+                        vec4 ix = Pi.xzxz;
+                        vec4 iy = Pi.yyww;
+                        vec4 fx = Pf.xzxz;
+                        vec4 fy = Pf.yyww;
+                        vec4 i = permute(permute(ix) + iy);
+                        vec4 gx = 2.0 * fract(i * 0.0243902439) - 1.0; // 1/41 = 0.024...
+                        vec4 gy = abs(gx) - 0.5;
+                        vec4 tx = floor(gx + 0.5);
+                        gx = gx - tx;
+                        vec2 g00 = vec2(gx.x,gy.x);
+                        vec2 g10 = vec2(gx.y,gy.y);
+                        vec2 g01 = vec2(gx.z,gy.z);
+                        vec2 g11 = vec2(gx.w,gy.w);
+                        vec4 norm = 1.79284291400159 - 0.85373472095314 * vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11));
+                        g00 *= norm.x;
+                        g01 *= norm.y;
+                        g10 *= norm.z;
+                        g11 *= norm.w;
+                        float n00 = dot(g00, vec2(fx.x, fy.x));
+                        float n10 = dot(g10, vec2(fx.y, fy.y));
+                        float n01 = dot(g01, vec2(fx.z, fy.z));
+                        float n11 = dot(g11, vec2(fx.w, fy.w));
+                        vec2 fade_xy = fade(Pf.xy);
+                        vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+                        float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+                        return 2.3 * n_xy ;
+                    }
+
+                    //Noise 2
+                    // Some useful functions
+                    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                    vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                    vec3 permute_l(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+                    float snoise(vec2 v, float time) {
+
+                        // Precompute values for skewed triangular grid
+                        const vec4 C = vec4(0.211324865405187,
+                                            // (3.0-sqrt(3.0))/6.0
+                                            0.366025403784439,
+                                            // 0.5*(sqrt(3.0)-1.0)
+                                            -0.577350269189626,
+                                            // -1.0 + 2.0 * C.x
+                                            0.024390243902439);
+                                            // 1.0 / 41.0
+                    
+                        // First corner (x0)
+                        vec2 i  = floor(v + dot(v, C.yy));
+                        vec2 x0 = v - i + dot(i, C.xx);
+                    
+                        // Other two corners (x1, x2)
+                        vec2 i1 = vec2(0.0);
+                        i1 = (x0.x > x0.y)? vec2(1.0, 0.0):vec2(0.0, 1.0);
+                        vec2 x1 = x0.xy + C.xx - i1;
+                        vec2 x2 = x0.xy + C.zz;
+                    
+                        // Do some permutations to avoid
+                        // truncation effects in permutation
+                        i = mod289(i);
+                        vec3 p = permute_l(
+                                permute_l( i.y + vec3(0.0, i1.y, 1.0))
+                                    + i.x + vec3(0.0, i1.x, 1.0 ));
+                    
+                        vec3 m = max(0.5 - vec3(
+                                            dot(x0,x0),
+                                            dot(x1,x1),
+                                            dot(x2,x2)
+                                            ), 0.0);
+                    
+                        m = m*m ;
+                        m = m*m ;
+                    
+                        // Gradients:
+                        //  41 pts uniformly over a line, mapped onto a diamond
+                        //  The ring size 17*17 = 289 is close to a multiple
+                        //      of 41 (41*7 = 287)
+                    
+                        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                        vec3 h = abs(x) - 0.5;
+                        vec3 ox = floor(x + 0.5);
+                        vec3 a0 = x - ox;
+                    
+                        // Normalise gradients implicitly by scaling m
+                        // Approximation of: m *= inversesqrt(a0*a0 + h*h);
+                        m *= 1.79284291400159 - 0.85373472095314 * (a0*a0+h*h);
+                    
+                        // Compute final noise value at P
+                        vec3 g = vec3(0.0);
+                        g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                        g.yz = a0.yz * vec2(x1.x,x2.x) + h.yz * vec2(x1.y,x2.y);
+                        return 130.0 * dot(m, g);
+                    }
+
+
+
+
+                 void main(){
+
+                    float strength = smoothstep(0.8, sin(cnoise(vUv * 13.0 + time * 3.2, time) * 12.2), 0.71 );
+
+                    float strength2 = smoothstep(1.2, sin(cnoise(vUv * 3.0 + time * 1.5, time) * 3.3), 0.2);
+
+                    float strength3 = smoothstep(0.3, sin(snoise(vUv * 4.0 + time * 1.1, time) * 0.26), 0.2);
+                    
+
+                    // Final color
+                    vec3 blackColor = vec3(0.0);
+
+                    vec3 uvColor = vec3(vUv.x * sin(time), 0.1, vUv.y * atan(vUv.y) );
+                    vec3 uvColor2 = vec3(vUv.x * atan(time * vUv.y ) * 7.0 , vUv.y * atan(time), 0.1);
+                    vec3 uvColor3 = vec3(vUv.y * atan(time * vUv.x ) * 1.5 , vUv.x * atan(time * 0.2), 0.3);
+                   
+                    
+                    vec3 mixedColor = mix( blackColor, uvColor, strength );
+                    vec3 mixedColor2 = mix( blackColor, uvColor2, strength2 );
+                    vec3 mixedColor3 = mix( blackColor, uvColor3 , strength3 );
+
+                    vec3 mixC = mix( mixedColor, mixedColor2, strength2 );
+                    vec3 mixC2 = mix( mixC, mixedColor3, strength3 );
+
+                    vec3 mixFinal = mixC2 ;
+
+                    gl_FragColor = vec4(mixFinal, 1.0);
+                 }
+            `
+    })
+    orbOne = new THREE.Mesh(sphereGeo, orbMat)
+    orbOne.position.x = -2
+    //orbOne.scale.set(0.4, 0.4, 0.4)
+    scene.add(orbOne)
+}
+
+const initOrbs1 = () => {
+    const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
+    let noise = new THREE.TextureLoader().load('./textures/noise/noise1_env.jpg')
+    noise.mapping = THREE.EquirectangularRefractionMapping;
+    noise.wrapS = THREE.RepeatWrapping;
+    noise.wrapT = THREE.RepeatWrapping;
+    noise.repeat.set( 1, 1 );
+
+    orbMat1 = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        alphaMap: noise
+
+    })
+    orb1 = new THREE.Mesh(sphereGeo, orbMat1)
+    orb1.position.x = 2
+    orb1.scale.set(1.01, 1.01, 1.01)
+    scene.add(orb1)
+}
+
+const initOrbs2 = () => {
+    const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
+    let noise = new THREE.TextureLoader().load('./textures/noise/noise1.jpg')
+    let noiseEnv = new THREE.TextureLoader().load('./textures/noise/noise1_env.jpg')
+    noise.mapping = THREE.EquirectangularRefractionMapping;
+    noise.wrapS = THREE.RepeatWrapping;
+    noise.wrapT = THREE.RepeatWrapping;
+    noise.repeat.set( 1, 1 );
+
+    orbMat2 = new THREE.MeshStandardMaterial({
+        color: 0xff0000,
+        transparent: true,
+        alphaMap: noise,
+        metalness: 0,
+        roughness: 1
+    })
+    orbTwo = new THREE.Mesh(sphereGeo, orbMat2)
+    orbTwo.position.x = 2
+    scene.add(orbTwo)
+}
+
+const initOrbs3 = () => {
+    const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
+    let noise = new THREE.TextureLoader().load('./textures/noise/noise1.jpg')
+    noise.mapping = THREE.EquirectangularRefractionMapping;
+    noise.wrapS = THREE.RepeatWrapping;
+    noise.wrapT = THREE.RepeatWrapping;
+    noise.repeat.set( 1.5, 1.5 );
+    noise.rotation = Math.PI * 0.2
+    orbMat3 = new THREE.MeshBasicMaterial({
+        color: 0x0DE133,
+        transparent: true,
+        alphaMap: noise
+       
+    })
+    orbThree = new THREE.Mesh(sphereGeo, orbMat3)
+    orbThree.position.x = 2
+    orbThree.scale.set(0.999, 0.999, 0.999)
+    scene.add(orbThree)
+}
+
+const initOrbs4 = () => {
+    const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
+    let noise = new THREE.TextureLoader().load('./textures/noise/star.jpg')
+    noise.mapping = THREE.EquirectangularRefractionMapping;
+    noise.wrapS = THREE.RepeatWrapping;
+    noise.wrapT = THREE.RepeatWrapping;
+    noise.repeat.set( 3, 3 );
+    orbMat4 = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        alphaMap: noise
+       
+    })
+    orb4 = new THREE.Mesh(sphereGeo, orbMat4)
+    orb4.position.x = 2
+    orb4.scale.set(0.998, 0.998, 0.998)
+    scene.add(orb4)
+}
+
+const initOrbs5 = () => {
+    const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
+    let noise = new THREE.TextureLoader().load('./textures/noise/cloud.jpg')
+    noise.mapping = THREE.EquirectangularRefractionMapping;
+    noise.wrapS = THREE.RepeatWrapping;
+    noise.wrapT = THREE.RepeatWrapping;
+    noise.repeat.set( 3, 3 );
+    orbMat5 = new THREE.MeshBasicMaterial({
+        color: 0x0000ff,
+        transparent: true,
+        alphaMap: noise
+       
+    })
+    orb5 = new THREE.Mesh(sphereGeo, orbMat5)
+    orb5.position.x = 2
+    orb5.scale.set(0.997, 0.997, 0.997)
+    scene.add(orb5)
 }
 
 
