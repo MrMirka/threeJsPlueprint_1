@@ -21,6 +21,9 @@ let cameraRig = new THREE.Group()
 let orbOne, orbTwo, orb1, orb4, orb5, orbThree, orbMat, orbMat1, orbMat2, orbMat3, orbMat4, orbMat5
 let noiseStep = 0.1
 
+let fireBall1 = new THREE.Group()
+let fireBall2 = new THREE.Group()
+
 //Compose param
 let isCompose = false
  const bloom = {
@@ -82,6 +85,8 @@ class Stage{
             camera.position.z = 6
             scene.add(camera)
             
+            scene.add(fireBall1)
+            scene.add(fireBall2)
 
             /**
              * Render
@@ -213,13 +218,78 @@ class Stage{
      */
     addGLTF(url) {
 
-        initOrbs()
-       
-        initOrbs5()
-        initOrbs4()
-        initOrbs3()
-        initOrbs2()
-        initOrbs1()
+        //GetOrbTexture
+        let noise = new THREE.TextureLoader(loadingManager).load('./textures/noise/noise.jpg')
+        noise.mapping = THREE.EquirectangularRefractionMapping
+        noise.wrapS = THREE.RepeatWrapping
+        noise.wrapT = THREE.RepeatWrapping
+        noise.repeat.set( 1, 1 )
+
+        let noise2 = new THREE.TextureLoader(loadingManager).load('./textures/noise/noise.jpg')
+        noise2.mapping = THREE.EquirectangularRefractionMapping
+        noise2.wrapS = THREE.RepeatWrapping
+        noise2.wrapT = THREE.RepeatWrapping
+        noise2.rotation = Math.PI * 0.2
+        noise2.repeat.set( 1, 1 )
+      
+
+        let noise_env = new THREE.TextureLoader(loadingManager).load('./textures/noise/noise_env.jpg')
+        noise_env.mapping = THREE.EquirectangularRefractionMapping
+        noise_env.wrapS = THREE.RepeatWrapping
+        noise_env.wrapT = THREE.RepeatWrapping
+        noise_env.repeat.set( 1, 1 )
+
+        let cloud = new THREE.TextureLoader(loadingManager).load('./textures/noise/cloud.jpg')
+        cloud.mapping = THREE.EquirectangularRefractionMapping
+        cloud.wrapS = THREE.RepeatWrapping
+        cloud.wrapT = THREE.RepeatWrapping
+        cloud.repeat.set( 3, 3 )
+
+        let star = new THREE.TextureLoader(loadingManager).load('./textures/noise/star.jpg')
+        star.mapping = THREE.EquirectangularRefractionMapping
+        star.wrapS = THREE.RepeatWrapping
+        star.wrapT = THREE.RepeatWrapping
+        star.repeat.set( 3, 3 )
+
+        //Fireball1
+        const fireB1 = [{
+            scale: 0.997,
+            type: 1,
+            color: 0x0000ff,
+            alpha: cloud,
+            speed: 150
+        },
+        {
+            scale: 0.998,
+            type: 1,
+            color: 0xffffff,
+            alpha: star,
+            speed: 132
+        },
+        {
+            scale: 0.999,
+            type: 1,
+            color: 0x0DE133,
+            alpha: noise2,
+            speed: 132
+        },
+        {
+            scale: 1,
+            type: 1,
+            color: 0xff0000,
+            alpha: noise,
+            speed: 88
+        },
+        {
+            scale: 1.01,
+            type: 1,
+            color: 0xffffff,
+            alpha: noise_env,
+            speed: 67
+        }
+        ]
+        makeOrderdBall(fireB1, fireBall1)
+        fireBall1.position.x = 2
         
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
@@ -375,15 +445,14 @@ class Stage{
 
 function tick(){
 
-    //const elapsedTime = clock.getElapsedTime()
     const deltaTime = clock.getDelta()
     if(mixer!=undefined) {
 		mixer.update( deltaTime );
 	}
 
-    if(orbMat!=undefined){
+    if(orbMat1!=undefined){
         noiseStep += 0.01
-        orbMat.uniforms[ 'time' ].value = noiseStep
+        //orbMat.uniforms[ 'time' ].value = noiseStep
         
 
         orbMat1.alphaMap.rotation +=0.002
@@ -885,7 +954,7 @@ const initOrbs = () => {
 
 const initOrbs1 = () => {
     const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
-    let noise = new THREE.TextureLoader().load('./textures/noise/noise1_env.jpg')
+    let noise = new THREE.TextureLoader().load('./textures/noise/noise_env.jpg')
     noise.mapping = THREE.EquirectangularRefractionMapping;
     noise.wrapS = THREE.RepeatWrapping;
     noise.wrapT = THREE.RepeatWrapping;
@@ -905,8 +974,7 @@ const initOrbs1 = () => {
 
 const initOrbs2 = () => {
     const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
-    let noise = new THREE.TextureLoader().load('./textures/noise/noise1.jpg')
-    let noiseEnv = new THREE.TextureLoader().load('./textures/noise/noise1_env.jpg')
+    let noise = new THREE.TextureLoader().load('./textures/noise/noise.jpg') 
     noise.mapping = THREE.EquirectangularRefractionMapping;
     noise.wrapS = THREE.RepeatWrapping;
     noise.wrapT = THREE.RepeatWrapping;
@@ -926,7 +994,7 @@ const initOrbs2 = () => {
 
 const initOrbs3 = () => {
     const sphereGeo = new THREE.SphereBufferGeometry(0.5, 16, 32)
-    let noise = new THREE.TextureLoader().load('./textures/noise/noise1.jpg')
+    let noise = new THREE.TextureLoader().load('./textures/noise/noise.jpg')
     noise.mapping = THREE.EquirectangularRefractionMapping;
     noise.wrapS = THREE.RepeatWrapping;
     noise.wrapT = THREE.RepeatWrapping;
@@ -980,6 +1048,44 @@ const initOrbs5 = () => {
     orb5.position.x = 2
     orb5.scale.set(0.997, 0.997, 0.997)
     scene.add(orb5)
+}
+
+
+/**
+ * FIREBALLS
+ */
+function makeOrderdBall(items, group) {
+    if(items.lenght == 0) return
+    items.forEach(item => {
+        let mesh = createSingleBall(item)
+        group.add(mesh)
+    })
+}
+
+function createSingleBall(item){
+    const geo = new THREE.SphereBufferGeometry(0.5, 16, 32)
+    let mat = null;
+    if(item.type == 1) {
+        mat = new THREE.MeshBasicMaterial({
+            color: item.color,
+            alphaMap: item.alpha,
+            transparent: true
+        })
+    }else{
+        mat = new THREE.MeshStandardMaterial({
+            color: item.color,
+            alphaMap: item.alpha,
+            transparent: true,
+            metalness: 0,
+            roughness: 1
+        })
+    }
+   
+    gsap.to(mat.alphaMap, {duration: item.speed, rotation: Math.PI * 2, repeat: -1, ease: 'none'})
+    const mesh = new THREE.Mesh(geo, mat)
+    mesh.scale.set(item.scale, item.scale, item.scale)
+
+    return mesh
 }
 
 
