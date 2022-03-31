@@ -5,7 +5,7 @@ const canvas = document.querySelector('canvas.webgl')
 
 const parameters = {
     utils: {
-        orbitControl: false,
+        orbitControl: true,
         testGeometry: false,
         axesHelper: false,
         grid: false,

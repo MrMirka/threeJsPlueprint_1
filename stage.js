@@ -24,6 +24,17 @@ let noiseStep = 0.1
 let fireBall1 = new THREE.Group()
 let fireBall2 = new THREE.Group()
 
+let ballsBlock = new THREE.Group()
+
+let geo, points
+let count = 0
+
+const colorInside = new THREE.Color('#ff0000')
+const colorOutside = new THREE.Color('#00ff00')
+
+let particleAlpha = new THREE.TextureLoader().load('./textures/noise/particle_alpha.jpg')
+
+
 //Compose param
 let isCompose = false
  const bloom = {
@@ -35,6 +46,7 @@ let isCompose = false
 
 //Mouse coordinate
 let mouseXY = new THREE.Vector2(0,0)
+
 
 class Stage{
     constructor(parameters) {
@@ -66,9 +78,9 @@ class Stage{
                gsap.to(matCircleIn, {duration: 1, opacity: 0})
 
                //Releaze model
-               gsap.to(model.scale, { duration: 1, delay: 0.3, x: 350, y:350, z: 350, onStart: ()=> {
+                gsap.to(model.scale, { duration: 1, delay: 0.3, x: 350, y:350, z: 350, onStart: ()=> {
                  updateAllmaterial()
-               } })
+               } }) 
             }, 3000);
         })
     }
@@ -85,8 +97,10 @@ class Stage{
             camera.position.z = 6
             scene.add(camera)
             
-            scene.add(fireBall1)
-            scene.add(fireBall2)
+            scene.add(ballsBlock)
+
+            ballsBlock.add(fireBall1)
+            ballsBlock.add(fireBall2)
 
             /**
              * Render
@@ -288,8 +302,33 @@ class Stage{
             speed: 67
         }
         ]
+
         makeOrderdBall(fireB1, fireBall1)
-        fireBall1.position.x = 2
+        makeOrderdBall(fireB1, fireBall2)
+        fireBall1.position.x = 1.5
+        fireBall2.position.x = -1.5
+
+        fireBall1.position.z = 1.5
+        fireBall1.rotation.y -= Math.PI * 0.2
+        fireBall2.position.z = 1.5
+
+        generateParticles(0.55, 0.05, 8, fireBall1)
+        generateParticles(0.58, 0.04, 9, fireBall1)
+        generateParticles(0.61, 0.02, 11, fireBall1)
+        generateParticles(0.63, 0.07, 7, fireBall1)
+
+        generateParticles(0.55, 0.05, 8, fireBall2)
+        generateParticles(0.58, 0.04, 9, fireBall2)
+        generateParticles(0.61, 0.02, 11, fireBall2)
+        generateParticles(0.63, 0.07, 7, fireBall2)
+
+      
+
+       
+       
+        
+      
+       
         
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
@@ -445,14 +484,16 @@ class Stage{
 
 function tick(){
 
+    
     const deltaTime = clock.getDelta()
+
+   count += 0.1
     if(mixer!=undefined) {
 		mixer.update( deltaTime );
 	}
 
     if(orbMat1!=undefined){
         noiseStep += 0.01
-        //orbMat.uniforms[ 'time' ].value = noiseStep
         
 
         orbMat1.alphaMap.rotation +=0.002
@@ -485,7 +526,11 @@ function tick(){
     //Models
     if(model!=undefined){
         cameraRig.rotation.x += ( mouseXY.y * 0.3 - cameraRig.rotation.x * 0.4 ) * 0.3
-	    cameraRig.rotation.y += ( mouseXY.x  * 0.5 - cameraRig.rotation.y * 0.3 ) * 0.5
+	    cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
+
+        ballsBlock.rotation.copy(cameraRig.rotation)
+        fireBall1.position.y = Math.sin(count * 0.23) * 0.09 - 0.3
+        fireBall2.position.y = Math.sin(count * 0.3) * 0.1 - 0.3
     }
     
     if(isCompose){
@@ -1087,6 +1132,44 @@ function createSingleBall(item){
 
     return mesh
 }
+
+/**
+ * Particles fireball orbit
+ */
+ const generateParticles = (radius, particleSize, speed, group) => {
+    geo = new THREE.SphereBufferGeometry(radius, 2, 1)
+    const colors = new Float32Array(geo.attributes.position.array)
+
+    for(let i = 0; i < geo.attributes.position.array.length; i++){
+        const i3 = i * 3
+            const mixedColor = colorInside.clone()
+            mixedColor.lerp(colorOutside, 0.5)
+            
+            colors[i3    ] = mixedColor.r * Math.random()
+            colors[i3 + 1] = mixedColor.g * Math.random()
+            colors[i3 + 2] = mixedColor.b * Math.random()
+    }
+
+    const material = new THREE.PointsMaterial({
+        size: particleSize,
+        sizeAttenuation: true,
+        depthWrite: true,
+        blending: THREE.AdditiveBlending,
+        vertexColors: true,
+        transparent: true,
+        alphaMap: particleAlpha
+    })
+    
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+    points = new THREE.Points(geo, material)
+    points.rotation.x = Math.random() * Math.PI
+    points.rotation.z = Math.random() * Math.PI
+    points.eulerOrder = 'ZYX';
+    gsap.to(points.rotation, {duration: speed, x: Math.PI * 2, repeat: -1, ease: 'none'})
+    gsap.to(points.rotation, {duration: speed * 1.8, y: Math.PI * 2, repeat: -1, ease: 'none'})
+    group.add(points)
+ }
+
 
 
 export {Stage}
