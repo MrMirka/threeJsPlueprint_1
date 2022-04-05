@@ -36,6 +36,7 @@ const colorOutside = new THREE.Color('#00ff00')
 
 let particleAlpha = new THREE.TextureLoader().load('./textures/noise/particle_alpha.jpg')
 
+
 //Compose param
 let isCompose = false
  const bloom = {
@@ -101,7 +102,6 @@ class Stage{
             //scene.add(camera)
 
             initBackPlane()
-            
          
             
             //scene.add(ballsBlock)
@@ -211,7 +211,6 @@ class Stage{
         let renderPass2 = new RenderPass( scene2, camera )
         renderPass2.clear = false
 
-
         //Filmic
         let filmPass = new FilmPass(0.13, 0.0025, 1648, false)
         //compose.addPass(filmPass) 
@@ -229,17 +228,18 @@ class Stage{
         bloomPass.strength = bloom.bloomStrength
         bloomPass.radius = bloom.bloomRadius 
 
-        
         let outputPass = new ShaderPass(CopyShader)
         outputPass.renderToScreen = true
-        
+
         compose = new EffectComposer(renderer)
+
         compose.addPass(clearPass)
         compose.addPass(renderPass1)
         compose.addPass(bloomPass) 
         compose.addPass(renderPass2)
         compose.addPass(outputPass)
-        
+
+        //compose.addPass(bloomPass)
 
         gui.add(bloom, 'bloomThreshold').min(0).max(1).step(0.003).onChange(value => {
             bloomPass.threshold = value
@@ -408,8 +408,8 @@ class Stage{
         generateParticles(0.58, 0.04, 9, particleG2)
         generateParticles(0.61, 0.02, 11, particleG2)
         generateParticles(0.63, 0.07, 7, particleG2)
-        //glowToBall()
-        //glowToBall2()
+        glowToBall()
+        glowToBall2()
 
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
@@ -606,6 +606,7 @@ function tick(){
     
     if(isCompose){
         compose.render()
+        //renderer.render(scene2, camera)
     }else{
         renderer.render(scene, camera)
     }
@@ -966,16 +967,11 @@ function createSingleBall(item){
      const back_height = camera.getFilmHeight() / 2
      const texture = new THREE.TextureLoader().load('./img/background2.jpg')
      const geo = new THREE.PlaneGeometry(back_width, back_height)
-     const mat = new THREE.MeshBasicMaterial({
-         map: texture,
-         transparent: true,
-         opacity: 1
-        })
+     const mat = new THREE.MeshBasicMaterial({map: texture})
      const mesh = new THREE.Mesh(geo, mat)
      mesh.position.z = -5
      scene2.add(mesh)
  }
-
 
  /**
   * Add glow to ball
