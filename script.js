@@ -5,7 +5,7 @@ const canvas = document.querySelector('canvas.webgl')
 
 const parameters = {
     utils: {
-        orbitControl: true,
+        orbitControl: false,
         testGeometry: false,
         axesHelper: false,
         grid: false,
@@ -83,4 +83,4 @@ stage.initCircleLoader()
 stage.addGLTF('./models/invoker/character.gltf')
 stage.initLights(lights)
 stage.initMouseListener()
-stage.initPostprocess()
+//stage.initPostprocess()
