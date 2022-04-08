@@ -31,6 +31,8 @@ let cameraRig = new THREE.Group()
 let fireBall1 = new THREE.Group()
 let fireBall2 = new THREE.Group()
 
+let perelinGroup = new THREE.Group()
+
 let ballsBlock = new THREE.Group()
 
 let geo, points
@@ -89,6 +91,7 @@ class Stage{
                scene.add(ballsBlock)
                gsap.to(model.scale, { duration: 1, delay: 0.3, x: 350, y:350, z: 350, onStart: ()=> {
                  updateAllmaterial()
+                 
                } }) 
             }, 3000);
         })
@@ -100,6 +103,7 @@ class Stage{
     initScene(){
             scene  = new THREE.Scene()
             perelinScene  = new THREE.Scene()
+            perelinScene.add(perelinGroup)
             scene.add(cameraRig)
             camera = new THREE.PerspectiveCamera(this.parameters.camera.fov, this.parameters.canvas.width / this.parameters.canvas.height, 1, 100 )
             
@@ -121,9 +125,10 @@ class Stage{
                 }
             )
             cubeCamera = new THREE.CubeCamera(0.1, 10, cubeRenderTarget)
-
-            BB = new TheBALLS(THREE, fireBall1, perelinScene, cubeRenderTarget)
+            BB = new TheBALLS(THREE, fireBall1, perelinGroup)
             BB.init()
+
+            
 
             /**
              * Render
@@ -167,6 +172,36 @@ class Stage{
             if(this.parameters.utils.gui) {
                 gui = new dat.GUI()
             }
+
+            //Glow parameter
+            /* let glowP = {
+                glow1: 0.581,
+                glow2:0.69,
+                glow3:1.015,
+                smooth1:0.668,
+                smooth2:0.776,
+            }
+            gui.add(glowP, 'glow1').min(0).max(2).step(0.001).onChange(v=>{
+                BB.getGlowMat().uniforms.glow1.value = v
+            })
+
+            gui.add(glowP, 'glow2').min(0).max(2).step(0.001).onChange(v=>{
+                BB.getGlowMat().uniforms.glow2.value = v
+            })
+
+            gui.add(glowP, 'glow3').min(0).max(2).step(0.001).onChange(v=>{
+                BB.getGlowMat().uniforms.glow3.value = v
+            }) 
+
+            gui.add(glowP, 'smooth1').min(0).max(2).step(0.001).onChange(v=>{
+                BB.getGlowMat().uniforms.smooth1.value = v
+            }) 
+            gui.add(glowP, 'smooth2').min(0).max(2).step(0.001).onChange(v=>{
+                BB.getGlowMat().uniforms.smooth2.value = v
+            })   */
+
+            let pp = BB.getGlowPosition();
+            gui.add(pp.rotation, 'y').min(0).max(Math.PI * 2).step(0.0003).name("GlowRotation")
             
 
             //Add test geometry
@@ -276,8 +311,6 @@ class Stage{
             mixer = new THREE.AnimationMixer( model )
             mixer.clipAction(animations[0]).play()
             scene.add(model)
-
-            
         })
     }
 
@@ -438,7 +471,18 @@ function tick(){
         stats.update()
     }
 
-    //BB.getPerelinMat().uniforms.time.value = count
+    perelinGroup.position.copy(fireBall1.position)
+
+    if(cubeCamera!= undefined){
+        cubeCamera.update(renderer, perelinScene)
+    } 
+
+    BB.getPerelinMat().uniforms.time.value = count
+    BB.getColorMat().uniforms.time.value = count
+    if(cubeRenderTarget!= undefined){
+        BB.getColorMat().uniforms.uPerelin.value = cubeRenderTarget.texture
+    }
+    
 
     //Models
     if(model!=undefined){
@@ -456,9 +500,7 @@ function tick(){
         particleG2.rotation.copy(cameraRig.rotation)
     }
 
-    if(cubeCamera!= undefined){
-        cubeCamera.update(renderer, perelinScene)
-    } 
+    
     
 
     if(isCompose){
