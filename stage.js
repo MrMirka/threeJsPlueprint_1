@@ -252,7 +252,14 @@ class Stage{
      * Postpoces
      */
     initPostprocess(){
-        
+        isCompose = true
+        compose = new EffectComposer(renderer)
+        compose.addPass( new RenderPass( scene, camera ) )
+
+
+        //Filmic
+        let filmPass = new FilmPass(0.12, 0.0025, 1648, false)
+        compose.addPass(filmPass)
     }
     
     /**
@@ -309,7 +316,6 @@ class Stage{
 
             //Animate RIG
             const animations = gltf.animations
-            console.log(animations)
             mixer = new THREE.AnimationMixer( model )
             mixer.clipAction(animations[0]).play()
             scene.add(model)
@@ -489,7 +495,6 @@ function tick(){
 
     BB.getColorMat().uniforms.time.value = count
 
-    //console.log(Math.abs(0.5 + mouseXY.x))
 
     if(cubeRenderTarget!= undefined){
         BB.getColorMat().uniforms.uPerelin.value = cubeRenderTarget.texture
@@ -759,7 +764,12 @@ function addHelper(type, ligth, color){
         
         if(child.name == 'GLTF'){
             child.traverse(item => {
-               
+                if(item.name === 'Head_0'){
+                    item.position.y = Math.PI * 2.3
+                    console.log(item)
+                    //item.rotation
+                }
+                
                 if(item instanceof THREE.Mesh && item.material instanceof THREE.MeshStandardMaterial){
                     item.material.envMapIntensity = 0.01
                     item.material.needsUpdate = true

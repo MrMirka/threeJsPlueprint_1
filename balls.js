@@ -7,7 +7,6 @@ import {glow_vertex_shader} from './lib/shaders/glow_v.js'
 import {glow_fragment_shader} from './lib/shaders/glow_f.js'
 
 let clock, mat, colorMat, glowMat, geoGlow
-console.log(glow_vertex_shader)
 
 class TheBALLS {
     constructor(THREE,  block, perelinScene){
