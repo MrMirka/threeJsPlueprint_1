@@ -109,7 +109,7 @@ class Stage{
             
             camera.position.z =6
             ballsBlock.add(fireBall1)
-            ballsBlock.add(fireBall2)
+            //ballsBlock.add(fireBall2)
 
             
 
@@ -268,20 +268,24 @@ class Stage{
      */
     addGLTF(url) {
 
-        fireBall1.position.x = 1.5
-        fireBall2.position.x = -1.5
+       // fireBall1.position.x = 1.5
+        //fireBall2.position.x = -1.5
+        fireBall1.position.z = 2
 
-        fireBall1.position.z = 1.5
+        gui.add(fireBall1.position, 'z').min(-5).max(5).step(0.001).name('BALL_Z')
+        gui.add(fireBall1.position, 'y').min(-5).max(5).step(0.001).name('BALL_Y')
+
         fireBall1.rotation.y -= Math.PI * 0.2
-        fireBall2.position.z = 1.5
+        //fireBall2.position.z = 1.5
+        
 
         particleG1 = new THREE.Group()
         scene.add(particleG1)
         particleG1.position.copy(fireBall1.position)
 
         particleG2 = new THREE.Group()
-        scene.add(particleG2)
-        particleG2.position.copy(fireBall2.position)
+       // scene.add(particleG2)
+       // particleG2.position.copy(fireBall2.position)
 
 
         generateParticles(0.55, 0.05, 8, particleG1)
@@ -479,6 +483,7 @@ function tick(){
 
     BB.getPerelinMat().uniforms.time.value = count
     BB.getColorMat().uniforms.time.value = count
+
     if(cubeRenderTarget!= undefined){
         BB.getColorMat().uniforms.uPerelin.value = cubeRenderTarget.texture
     }
@@ -486,18 +491,18 @@ function tick(){
 
     //Models
     if(model!=undefined){
-        cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
-	    cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
+       // cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
+	   // cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
 
         ballsBlock.rotation.copy(cameraRig.rotation)
-        fireBall1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.3
-        fireBall2.position.y = Math.sin(count * 0.3  ) * 0.1 - 0.3
+        fireBall1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
+       // fireBall2.position.y = Math.sin(count * 0.3  ) * 0.1 - 0.3
 
-        particleG1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.3
-        particleG2.position.y = Math.sin(count * 0.3  ) * 0.1 - 0.3
+        particleG1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
+       // particleG2.position.y = Math.sin(count * 0.3  ) * 0.1 - 0.3
 
         particleG1.rotation.copy(cameraRig.rotation)
-        particleG2.rotation.copy(cameraRig.rotation)
+       // particleG2.rotation.copy(cameraRig.rotation)
     }
 
     

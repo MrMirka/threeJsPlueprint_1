@@ -94,6 +94,8 @@ function addGlowBall(T, group){
     })
     geoGlow = new T.Mesh(geo, glowMat)
     geoGlow.rotation.y = Math.PI * 0.2
+    geoGlow.rotation.x -=  0.2
+
     group.add(geoGlow)
 }
 export {TheBALLS}
