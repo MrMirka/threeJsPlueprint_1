@@ -40,8 +40,8 @@ let count = 0
 
 let BB
 
-const colorInside = new THREE.Color('#ff0000')
-const colorOutside = new THREE.Color('#00ff00')
+const colorInside = new THREE.Color('#ff00aa')
+const colorOutside = new THREE.Color('#aaff00')
 
 let particleAlpha = new THREE.TextureLoader().load('./textures/noise/particle_alpha.jpg')
 
@@ -200,8 +200,8 @@ class Stage{
                 BB.getGlowMat().uniforms.smooth2.value = v
             })   */
 
-            let pp = BB.getGlowPosition();
-            gui.add(pp.rotation, 'y').min(0).max(Math.PI * 2).step(0.0003).name("GlowRotation")
+           // let pp = BB.getGlowPosition();
+           // gui.add(pp.rotation, 'y').min(0).max(Math.PI * 2).step(0.0003).name("GlowRotation")
             
 
             //Add test geometry
@@ -272,8 +272,6 @@ class Stage{
         //fireBall2.position.x = -1.5
         fireBall1.position.z = 2
 
-        gui.add(fireBall1.position, 'z').min(-5).max(5).step(0.001).name('BALL_Z')
-        gui.add(fireBall1.position, 'y').min(-5).max(5).step(0.001).name('BALL_Y')
 
         fireBall1.rotation.y -= Math.PI * 0.2
         //fireBall2.position.z = 1.5
@@ -288,15 +286,15 @@ class Stage{
        // particleG2.position.copy(fireBall2.position)
 
 
-        generateParticles(0.55, 0.05, 8, particleG1)
-        generateParticles(0.58, 0.04, 9, particleG1)
-        generateParticles(0.61, 0.02, 11, particleG1)
-        generateParticles(0.63, 0.07, 7, particleG1)
+        generateParticles(0.75, 0.05, 8, particleG1)
+        generateParticles(0.78, 0.04, 9, particleG1)
+        generateParticles(0.81, 0.02, 11, particleG1)
+        generateParticles(0.83, 0.07, 7, particleG1)
 
-        generateParticles(0.55, 0.05, 8, particleG2)
+       /*  generateParticles(0.55, 0.05, 8, particleG2)
         generateParticles(0.58, 0.04, 9, particleG2)
         generateParticles(0.61, 0.02, 11, particleG2)
-        generateParticles(0.63, 0.07, 7, particleG2)
+        generateParticles(0.63, 0.07, 7, particleG2) */
 
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
@@ -482,7 +480,16 @@ function tick(){
     } 
 
     BB.getPerelinMat().uniforms.time.value = count
+
+    BB.getPerelinMat().uniforms.mouseX.value = mouseXY.x
+    BB.getPerelinMat().uniforms.mouseY.value = mouseXY.y
+
+    BB.getColorMat().uniforms.mouseX.value = 0.5 + mouseXY.x
+    BB.getColorMat().uniforms.mouseY.value =0.5 + mouseXY.y
+
     BB.getColorMat().uniforms.time.value = count
+
+    //console.log(Math.abs(0.5 + mouseXY.x))
 
     if(cubeRenderTarget!= undefined){
         BB.getColorMat().uniforms.uPerelin.value = cubeRenderTarget.texture
@@ -491,8 +498,8 @@ function tick(){
 
     //Models
     if(model!=undefined){
-       // cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
-	   // cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
+        //cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
+	    //cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
 
         ballsBlock.rotation.copy(cameraRig.rotation)
         fireBall1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7

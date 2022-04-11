@@ -53,6 +53,8 @@ function addPerelinBall(T, group){
         fragmentShader: perelin_fragment_shader,
         uniforms: {
             time: { value: 0 },
+            mouseX: {value: 0},
+            mouseY: {value: 0},
         }
     })
     const mesh = new T.Mesh(geo, mat)
@@ -68,7 +70,9 @@ function addColorBall(T, group){
         fragmentShader: sun_fragment_shader,
         uniforms: {
             time: { value: 0 },
-            uPerelin: { value: null }
+            uPerelin: { value: null },
+            mouseX: {value: 0},
+            mouseY: {value: 0},
         }
     })
     const mesh = new T.Mesh(geo, colorMat)
