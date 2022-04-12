@@ -40,6 +40,8 @@ let count = 0
 
 let BB
 
+let rig = {}
+
 const colorInside = new THREE.Color('#ff00aa')
 const colorOutside = new THREE.Color('#aaff00')
 
@@ -319,6 +321,8 @@ class Stage{
             mixer = new THREE.AnimationMixer( model )
             mixer.clipAction(animations[0]).play()
             scene.add(model)
+            
+            realizeRig(model)
         })
     }
 
@@ -455,12 +459,20 @@ class Stage{
 function tick(){
     const deltaTime = clock.getDelta()
 
-
-
-   count += 0.1
     if(mixer!=undefined) {
 		mixer.update( deltaTime );
 	}
+
+    if(rig.skeleton != undefined) {
+        rig.skeleton.bones[25].position.x = 18.36
+        rig.skeleton.bones[25].position.y = 0
+        rig.skeleton.bones[25].position.z = 1.21
+        rig.skeleton.bones[25].rotation.x = mouseXY.x
+        rig.skeleton.bones[25].rotation.y = mouseXY.y * 0.8 + 0.2
+    }
+
+   count += 0.1
+   
 
     //Circle loader
     if(loaderCircleOut!=undefined && loaderCircleIn!=undefined) {
@@ -503,11 +515,12 @@ function tick(){
 
     //Models
     if(model!=undefined){
-        //cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
-	    //cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
+        cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
+	    cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
 
-        ballsBlock.rotation.copy(cameraRig.rotation)
+        //ballsBlock.position.copy(cameraRig.rotation)
         fireBall1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
+        fireBall1.position.x += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.2
        // fireBall2.position.y = Math.sin(count * 0.3  ) * 0.1 - 0.3
 
         particleG1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
@@ -764,9 +777,10 @@ function addHelper(type, ligth, color){
         
         if(child.name == 'GLTF'){
             child.traverse(item => {
+                //console.log(item)
                 if(item.name === 'Head_0'){
                     item.position.y = Math.PI * 2.3
-                    console.log(item)
+                    //console.log(item)
                     //item.rotation
                 }
                 
@@ -837,4 +851,12 @@ const updateSpotLight = () => {
     group.add(points)
  }
 
+ function realizeRig(model){
+     //console.log(model)
+     rig.skeleton = model.children[1].children[0].skeleton
+     
+     /* gui.add(rig.skeleton.bones[25].position, 'x').min(-3).max(30).step(0.01)
+     gui.add(rig.skeleton.bones[25].position, 'y').min(-3).max(3).step(0.01)
+     gui.add(rig.skeleton.bones[25].position, 'z').min(-3).max(3).step(0.01) */
+ }
 export {Stage}
