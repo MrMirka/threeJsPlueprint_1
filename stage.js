@@ -30,8 +30,10 @@ let cameraRig = new THREE.Group()
 
 let fireBall1 = new THREE.Group()
 let fireBall2 = new THREE.Group()
+let fireBall3 = new THREE.Group()
 
 let perelinGroup = new THREE.Group()
+let perelinGroup2 = new THREE.Group()
 
 let ballsBlock = new THREE.Group()
 
@@ -126,11 +128,15 @@ class Stage{
                     encoding: THREE.sRGBEncoding
                 }
             )
+
             cubeCamera = new THREE.CubeCamera(0.1, 10, cubeRenderTarget)
+
+
             BB = new TheBALLS(THREE, fireBall1, perelinGroup)
             BB.init()
 
             
+
 
             /**
              * Render
@@ -175,36 +181,6 @@ class Stage{
                 gui = new dat.GUI()
             }
 
-            //Glow parameter
-            /* let glowP = {
-                glow1: 0.581,
-                glow2:0.69,
-                glow3:1.015,
-                smooth1:0.668,
-                smooth2:0.776,
-            }
-            gui.add(glowP, 'glow1').min(0).max(2).step(0.001).onChange(v=>{
-                BB.getGlowMat().uniforms.glow1.value = v
-            })
-
-            gui.add(glowP, 'glow2').min(0).max(2).step(0.001).onChange(v=>{
-                BB.getGlowMat().uniforms.glow2.value = v
-            })
-
-            gui.add(glowP, 'glow3').min(0).max(2).step(0.001).onChange(v=>{
-                BB.getGlowMat().uniforms.glow3.value = v
-            }) 
-
-            gui.add(glowP, 'smooth1').min(0).max(2).step(0.001).onChange(v=>{
-                BB.getGlowMat().uniforms.smooth1.value = v
-            }) 
-            gui.add(glowP, 'smooth2').min(0).max(2).step(0.001).onChange(v=>{
-                BB.getGlowMat().uniforms.smooth2.value = v
-            })   */
-
-           // let pp = BB.getGlowPosition();
-           // gui.add(pp.rotation, 'y').min(0).max(Math.PI * 2).step(0.0003).name("GlowRotation")
-            
 
             //Add test geometry
             if(this.parameters.utils.testGeometry) {
@@ -277,13 +253,10 @@ class Stage{
      */
     addGLTF(url) {
 
-       // fireBall1.position.x = 1.5
-        //fireBall2.position.x = -1.5
         fireBall1.position.z = 2
+        fireBall1.scale.set(0.4,0.4,0.4)
 
 
-        fireBall1.rotation.y -= Math.PI * 0.2
-        //fireBall2.position.z = 1.5
         
 
         particleG1 = new THREE.Group()
@@ -467,8 +440,10 @@ function tick(){
         rig.skeleton.bones[25].position.x = 18.36
         rig.skeleton.bones[25].position.y = 0
         rig.skeleton.bones[25].position.z = 1.21
-        rig.skeleton.bones[25].rotation.x = mouseXY.x
-        rig.skeleton.bones[25].rotation.y = mouseXY.y * 0.8 + 0.2
+        //rig.skeleton.bones[25].rotation.x = mouseXY.x
+        //rig.skeleton.bones[25].rotation.y = mouseXY.y * 0.8 + 0.2
+        rig.skeleton.bones[25].rotation.y += ( mouseXY.y * 2.3 - cameraRig.rotation.x * 0.2 ) * 0.1 - 0.15
+        rig.skeleton.bones[25].rotation.x += ( mouseXY.x  * 2.15 - cameraRig.rotation.y * 0.1 ) * 0.5
     }
 
    count += 0.1
@@ -491,26 +466,23 @@ function tick(){
         stats.update()
     }
 
-    perelinGroup.position.copy(fireBall1.position)
+    //perelinGroup.position.copy(fireBall1.position)
+    //perelinGroup2.position.copy(fireBall3.position)
 
     if(cubeCamera!= undefined){
         cubeCamera.update(renderer, perelinScene)
-    } 
+    }  
+
 
     BB.getPerelinMat().uniforms.time.value = count
-
-    BB.getPerelinMat().uniforms.mouseX.value = mouseXY.x
-    BB.getPerelinMat().uniforms.mouseY.value = mouseXY.y
-
-    BB.getColorMat().uniforms.mouseX.value = 0.5 + mouseXY.x
-    BB.getColorMat().uniforms.mouseY.value =0.5 + mouseXY.y
-
     BB.getColorMat().uniforms.time.value = count
-
 
     if(cubeRenderTarget!= undefined){
         BB.getColorMat().uniforms.uPerelin.value = cubeRenderTarget.texture
     }
+
+
+    
     
 
     //Models
@@ -518,16 +490,22 @@ function tick(){
         cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
 	    cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
 
-        //ballsBlock.position.copy(cameraRig.rotation)
-        fireBall1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
+        fireBall1.position.y = -0.7
+        fireBall1.children[0].position.y = Math.sin(count * 0.23 ) * 0.2 + 0.3
+        fireBall1.children[0].position.x = Math.cos(count * 0.23 ) * 0.2 
+
+        fireBall1.children[1].position.y = Math.sin(count * 0.38 ) * 0.2 
+        fireBall1.children[1].position.x = Math.cos(count * 0.31 ) * 0.2 - 0.3
+
+        fireBall1.children[2].position.y = Math.sin(count * 0.28 ) * 0.2 
+        fireBall1.children[2].position.x = Math.cos(count * 0.33 ) * 0.2
+
+
         fireBall1.position.x += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.2
-       // fireBall2.position.y = Math.sin(count * 0.3  ) * 0.1 - 0.3
-
+      
         particleG1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
-       // particleG2.position.y = Math.sin(count * 0.3  ) * 0.1 - 0.3
-
+      
         particleG1.rotation.copy(cameraRig.rotation)
-       // particleG2.rotation.copy(cameraRig.rotation)
     }
 
     
@@ -735,7 +713,7 @@ function addSpotLight(param){
         folder.add(targetObject.position,'y').min(-10).max(10).step(0.01).name('target Y').onChange(()=>{updateSpotLight()})
         folder.add(targetObject.position,'z').min(-10).max(10).step(0.01).name('target Z').onChange(()=>{updateSpotLight()})
 
-        folder.add(spotLight, 'intensity').min(0).max(3000).step(0.01).name('intensity')
+        folder.add(spotLight, 'intensity').min(0).max(70).step(0.0001).name('intensity')
         folder.add(spotLight, 'distance').min(0).max(30).step(0.01).name('distance')
         folder.add(spotLight, 'decay').min(0).max(30).step(0.01).name('decay')
         folder.add(spotLight, 'angle').min(0).max(Math.PI / 2).step(0.01).name('angle').onChange(()=>{updateSpotLight()})

@@ -5,8 +5,11 @@ import {sun_vertex_shader} from './lib/shaders/sun_v.js'
 import {sun_fragment_shader} from './lib/shaders/sun_f.js'
 import {glow_vertex_shader} from './lib/shaders/glow_v.js'
 import {glow_fragment_shader} from './lib/shaders/glow_f.js'
+import { CompressedTextureLoader } from './lib/three/build/three.module.js'
 
 let clock, mat, colorMat, glowMat, geoGlow
+
+let ball1, ball2, ball3
 
 class TheBALLS {
     constructor(THREE,  block, perelinScene){
@@ -17,6 +20,9 @@ class TheBALLS {
 
     init(){
         clock = new this.T.Clock()
+        ball1 = new this.T.Group()
+        ball2 = new this.T.Group()
+        ball3 = new this.T.Group()
         addPerelinBall(this.T, this.perelinScene)
         addColorBall(this.T, this.block)
         addGlowBall(this.T, this.block)
@@ -75,7 +81,21 @@ function addColorBall(T, group){
         }
     })
     const mesh = new T.Mesh(geo, colorMat)
-    group.add(mesh)
+    let mesh2 = new T.Mesh(geo, colorMat)
+    let mesh3 = new T.Mesh(geo, colorMat)
+    mesh.position.set(0,0.7,0)
+    mesh2.position.set(-0.8,-0.5,0)
+    mesh3.position.set(0.8,-0.5,0)
+
+    ball1.name = 'ball1'
+    ball2.name = 'ball2'
+    ball3.name = 'ball3'
+    
+    ball1.add(mesh)
+    ball2.add(mesh2)
+    ball3.add(mesh3)
+
+    group.add(ball1, ball2, ball3)
 }
 
 //Glow Ball
@@ -96,10 +116,18 @@ function addGlowBall(T, group){
         }
     })
     geoGlow = new T.Mesh(geo, glowMat)
-    geoGlow.rotation.y = Math.PI * 0.2
     geoGlow.rotation.x -=  0.2
 
-    group.add(geoGlow)
+    let geoGlow2 = new T.Mesh(geo, glowMat)
+    let geoGlow3 = new T.Mesh(geo, glowMat)
+
+    geoGlow.position.set(0,0.75,0)
+    geoGlow2.position.set(-0.835,-0.62,0)
+    geoGlow3.position.set(0.833,-0.62,0)
+
+   ball1.add(geoGlow)
+   ball2.add(geoGlow2)
+   ball3.add(geoGlow3)
 }
 export {TheBALLS}
 
