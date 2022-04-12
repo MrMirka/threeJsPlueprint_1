@@ -111,7 +111,7 @@ class Stage{
             scene.add(cameraRig)
             camera = new THREE.PerspectiveCamera(this.parameters.camera.fov, this.parameters.canvas.width / this.parameters.canvas.height, 1, 100 )
             
-            camera.position.z =6
+            camera.position.z = 16
             ballsBlock.add(fireBall1)
             //ballsBlock.add(fireBall2)
 
@@ -254,7 +254,7 @@ class Stage{
     addGLTF(url) {
 
         fireBall1.position.z = 2
-        fireBall1.scale.set(0.4,0.4,0.4)
+        fireBall1.scale.set(0.45,0.45,0.45)
 
 
         
@@ -268,10 +268,10 @@ class Stage{
        // particleG2.position.copy(fireBall2.position)
 
 
-        generateParticles(0.75, 0.05, 8, particleG1)
-        generateParticles(0.78, 0.04, 9, particleG1)
-        generateParticles(0.81, 0.02, 11, particleG1)
-        generateParticles(0.83, 0.07, 7, particleG1)
+        generateParticles(0.75, 0.25, 8, particleG1)
+        generateParticles(0.78, 0.24, 9, particleG1)
+        generateParticles(0.81, 0.22, 11, particleG1)
+        generateParticles(0.83, 0.27, 7, particleG1)
 
        /*  generateParticles(0.55, 0.05, 8, particleG2)
         generateParticles(0.58, 0.04, 9, particleG2)
@@ -287,7 +287,7 @@ class Stage{
             model.name = 'GLTF'
             model.scale.set(0)
             model.position.y = -6
-            camera.position.z = 6
+            //camera.position.z = 16
 
             //Animate RIG
             const animations = gltf.animations
@@ -491,7 +491,21 @@ function tick(){
 	    cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
 
         fireBall1.position.y = -0.7
-        fireBall1.children[0].position.y = Math.sin(count * 0.23 ) * 0.2 + 0.3
+
+        fireBall1.children[0].position.y = Math.sin(count * 0.07 ) * 1.5 - 0.9
+        fireBall1.children[0].position.x = Math.cos(count * 0.07 ) * 1.5
+        fireBall1.children[0].rotation.x = -fireBall1.children[0].position.y * 0.01 - 0.11
+
+
+        fireBall1.children[1].position.y = Math.sin(count * 0.07 + 2.2) * 1.5 - 0.9
+        fireBall1.children[1].position.x = Math.cos(count * 0.07 + 2.2) * 1.5 
+        fireBall1.children[1].rotation.x = -fireBall1.children[1].position.y * 0.01 - 0.11
+
+        fireBall1.children[2].position.y = Math.sin(count * 0.07 + 4.2) * 1.5 - 0.9
+        fireBall1.children[2].position.x = Math.cos(count * 0.07 + 4.2) * 1.5 
+        fireBall1.children[2].rotation.x = -fireBall1.children[2].position.y * 0.01 - 0.11
+
+        /* fireBall1.children[0].position.y = Math.sin(count * 0.23 ) * 0.2 + 0.3
         fireBall1.children[0].position.x = Math.cos(count * 0.23 ) * 0.2 
 
         fireBall1.children[1].position.y = Math.sin(count * 0.38 ) * 0.2 
@@ -500,7 +514,7 @@ function tick(){
         fireBall1.children[2].position.y = Math.sin(count * 0.28 ) * 0.2 
         fireBall1.children[2].position.x = Math.cos(count * 0.33 ) * 0.2
 
-
+ */
         fireBall1.position.x += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.2
       
         particleG1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
@@ -812,7 +826,7 @@ const updateSpotLight = () => {
     const material = new THREE.PointsMaterial({
         size: particleSize,
         sizeAttenuation: true,
-        depthWrite: true,
+        depthWrite: false,
         blending: THREE.AdditiveBlending,
         vertexColors: true,
         transparent: true,

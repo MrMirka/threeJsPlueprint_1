@@ -26,7 +26,7 @@ const parameters = {
         canvas: canvas
     },
     camera: {
-        fov: 45
+        fov: 15
     }
 }
 

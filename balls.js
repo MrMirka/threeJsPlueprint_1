@@ -84,8 +84,11 @@ function addColorBall(T, group){
     let mesh2 = new T.Mesh(geo, colorMat)
     let mesh3 = new T.Mesh(geo, colorMat)
     mesh.position.set(0,0.7,0)
-    mesh2.position.set(-0.8,-0.5,0)
-    mesh3.position.set(0.8,-0.5,0)
+    mesh2.position.set(0,0.7,0)
+    mesh3.position.set(0,0.7,0)
+
+    //mesh2.position.set(-0.8,-0.5,0)
+   // mesh3.position.set(0.8,-0.5,0)
 
     ball1.name = 'ball1'
     ball2.name = 'ball2'
@@ -122,8 +125,11 @@ function addGlowBall(T, group){
     let geoGlow3 = new T.Mesh(geo, glowMat)
 
     geoGlow.position.set(0,0.75,0)
-    geoGlow2.position.set(-0.835,-0.62,0)
-    geoGlow3.position.set(0.833,-0.62,0)
+    geoGlow2.position.set(0,0.75,0)
+    geoGlow3.position.set(0,0.75,0)
+
+    //geoGlow2.position.set(-0.835,-0.62,0)
+    //geoGlow3.position.set(0.833,-0.62,0)
 
    ball1.add(geoGlow)
    ball2.add(geoGlow2)
