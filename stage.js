@@ -9,16 +9,12 @@ import * as dat from './lib/dat.gui.module.js'
 //Postprocessing
 import { EffectComposer } from './lib/three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from './lib/three/examples/jsm/postprocessing/RenderPass.js'
-import { ShaderPass } from './lib/three/examples/jsm/postprocessing/ShaderPass.js'
-import { ClearPass } from './lib/three/examples/jsm/postprocessing/ClearPass.js'
-import { CopyShader } from './lib/three/examples/jsm/shaders/CopyShader.js'
-import { UnrealBloomPass } from './lib/three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { FilmPass } from './lib/three/examples/jsm/postprocessing/FilmPass.js'
 
 import { TheBALLS } from './balls.js'
 
 
-let scene, perelinScene, camera, renderer, orbitControl, model, stats, gui, mixer, compose, particleG1, particleG2
+let scene, perelinScene, camera, renderer, orbitControl, model, stats, gui, mixer, compose
 let clock = new THREE.Clock()
 let loader, barMesh, loaderCircleOut, loaderCircleIn
 let loadingManager
@@ -29,11 +25,9 @@ let cubeRenderTarget, cubeCamera
 let cameraRig = new THREE.Group()
 
 let fireBall1 = new THREE.Group()
-let fireBall2 = new THREE.Group()
-let fireBall3 = new THREE.Group()
+let particleG1 = new THREE.Group()
 
 let perelinGroup = new THREE.Group()
-let perelinGroup2 = new THREE.Group()
 
 let ballsBlock = new THREE.Group()
 
@@ -94,7 +88,12 @@ class Stage{
                //Releaze model
                scene.add(ballsBlock)
                gsap.to(model.scale, { duration: 1, delay: 0.3, x: 350, y:350, z: 350, onStart: ()=> {
-                 updateAllmaterial()
+                updateAllmaterial()
+                 
+                generateParticles(0.75, 0.25, 8, particleG1)
+                generateParticles(0.78, 0.24, 9, particleG1)
+                generateParticles(0.81, 0.22, 11, particleG1)
+                generateParticles(0.83, 0.27, 7, particleG1)
                  
                } }) 
             }, 3000);
@@ -112,11 +111,12 @@ class Stage{
             camera = new THREE.PerspectiveCamera(this.parameters.camera.fov, this.parameters.canvas.width / this.parameters.canvas.height, 1, 100 )
             
             camera.position.z = 16
+
             ballsBlock.add(fireBall1)
-            //ballsBlock.add(fireBall2)
+            scene.add(particleG1)
+            //particleG1.position.copy(fireBall1.position)
 
             
-
             /**
              * Cube camera
              */
@@ -136,7 +136,6 @@ class Stage{
             BB.init()
 
             
-
 
             /**
              * Render
@@ -256,17 +255,6 @@ class Stage{
         fireBall1.position.z = 2
         fireBall1.scale.set(0.45,0.45,0.45)
 
-        particleG1 = new THREE.Group()
-        scene.add(particleG1)
-        particleG1.position.copy(fireBall1.position)
-
-        particleG2 = new THREE.Group()
-
-        generateParticles(0.75, 0.25, 8, particleG1)
-        generateParticles(0.78, 0.24, 9, particleG1)
-        generateParticles(0.81, 0.22, 11, particleG1)
-        generateParticles(0.83, 0.27, 7, particleG1)
-
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
         const gltfLoader = new GLTFLoader(loadingManager)
@@ -346,7 +334,6 @@ class Stage{
         barMeshBack.position.y = - 0.562
         barMeshBack.position.z =  -0.02
         scene.add(barMesh, barMeshBack) 
-        
     }
 
     //Circle
@@ -358,25 +345,11 @@ class Stage{
             map: logo,
             transparent: true,
             side:THREE.DoubleSide,
-            metalness: 1,
-            roughness: 0.6,
-            envMapIntensity: 0.01
         })
         loader = new THREE.Mesh(geo, matLogo)
         loader.name = 'logo_loader'
         const scaleFactor ={value: 0.5}
         loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value)
-
-        /**
-         * Debug
-         */
-       // if(gui!=undefined) {
-        //    const folder = gui.addFolder('Loader')
-         //   folder.add(scaleFactor, 'value').min(0).max(2).step(0.002).name('LogoSize').onChange(()=>{
-         //       loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value )
-         //   })
-      //  }
-         
         scene.add(loader)
 
         const circleTexture1 = new THREE.TextureLoader(loadingManager).load('./textures/loader/circle_1.png')
@@ -428,9 +401,6 @@ function tick(){
         rig.skeleton.bones[25].position.x = 18.36
         rig.skeleton.bones[25].position.y = 0
         rig.skeleton.bones[25].position.z = 1.21
-        //rig.skeleton.bones[25].rotation.x = mouseXY.x
-        //rig.skeleton.bones[25].rotation.y = mouseXY.y * 0.8 + 0.2
-
         let shiftY = mouseXY.y * 1.3 - Math.cos(cameraRig.rotation.y * 5.9) * 0.8
         let shiftX = mouseXY.x  * 1.15 - Math.sin(cameraRig.rotation.x * 10.9) * 0.4
         rig.skeleton.bones[25].rotation.y += ( shiftY ) * 0.1 - 0.15
@@ -457,13 +427,9 @@ function tick(){
         stats.update()
     }
 
-    //perelinGroup.position.copy(fireBall1.position)
-    //perelinGroup2.position.copy(fireBall3.position)
-
     if(cubeCamera!= undefined){
         cubeCamera.update(renderer, perelinScene)
     }  
-
 
     BB.getPerelinMat().uniforms.time.value = count
     BB.getColorMat().uniforms.time.value = count
@@ -476,11 +442,6 @@ function tick(){
         BB.getColorMatPurple().uniforms.uPerelin.value = cubeRenderTarget.texture
     }
 
-
-    
-
-    
-    
 
     //Models
     if(model!=undefined){
@@ -502,26 +463,13 @@ function tick(){
         fireBall1.children[2].position.x = Math.cos(count * 0.07 + 4.2) * 1.5 
         fireBall1.children[2].rotation.x = -fireBall1.children[2].position.y * 0.01 - 0.11
 
-        /* fireBall1.children[0].position.y = Math.sin(count * 0.23 ) * 0.2 + 0.3
-        fireBall1.children[0].position.x = Math.cos(count * 0.23 ) * 0.2 
-
-        fireBall1.children[1].position.y = Math.sin(count * 0.38 ) * 0.2 
-        fireBall1.children[1].position.x = Math.cos(count * 0.31 ) * 0.2 - 0.3
-
-        fireBall1.children[2].position.y = Math.sin(count * 0.28 ) * 0.2 
-        fireBall1.children[2].position.x = Math.cos(count * 0.33 ) * 0.2
-
- */
         fireBall1.position.x += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.2
-      
-        particleG1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7
-      
+        particleG1.position.y = Math.sin(count * 0.23 ) * 0.09 - 0.7 
         particleG1.rotation.copy(cameraRig.rotation)
+        particleG1.position.z = 2
     }
 
-    
-    
-
+    //Render
     if(isCompose){
         compose.render()
     }else{
@@ -769,8 +717,6 @@ function addHelper(type, ligth, color){
                 //console.log(item)
                 if(item.name === 'Head_0'){
                     item.position.y = Math.PI * 2.3
-                    //console.log(item)
-                    //item.rotation
                 }
                 
                 if(item instanceof THREE.Mesh && item.material instanceof THREE.MeshStandardMaterial){
@@ -779,14 +725,11 @@ function addHelper(type, ligth, color){
                     item.material.castShadow = true
                     item.material.receiveShadow = true
                     item.material.metalness = 0
-                    //item.material.roughness = 0.1
                     item.receiveShadow = true
                     item.castShadow = true
                     item.material.shadowSide = THREE.DoubleSide
                 }
             })
-            
-            
         }
     })
 }    
@@ -841,11 +784,6 @@ const updateSpotLight = () => {
  }
 
  function realizeRig(model){
-     //console.log(model)
      rig.skeleton = model.children[1].children[0].skeleton
-     
-     /* gui.add(rig.skeleton.bones[25].position, 'x').min(-3).max(30).step(0.01)
-     gui.add(rig.skeleton.bones[25].position, 'y').min(-3).max(3).step(0.01)
-     gui.add(rig.skeleton.bones[25].position, 'z').min(-3).max(3).step(0.01) */
  }
 export {Stage}
