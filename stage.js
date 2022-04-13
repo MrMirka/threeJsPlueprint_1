@@ -256,52 +256,16 @@ class Stage{
         fireBall1.position.z = 2
         fireBall1.scale.set(0.45,0.45,0.45)
 
-
-        const glowPar = {
-            glow1: 0.581,
-            glow2: 0.69,
-            glow3: 1.015 ,
-            smooth1:0.668,
-            smooth2: 0.581,
-        }
-    
-        gui.add(glowPar, 'glow1').min(0).max(2).onChange(v=>{
-            BB.getGlowMatBlue().uniforms.glow1.value = v
-        })
-        gui.add(glowPar, 'glow2').min(0).max(2).onChange(v=>{
-            BB.getGlowMatBlue().uniforms.glow2.value = v
-        })
-        gui.add(glowPar, 'glow3').min(0).max(2).onChange(v=>{
-            BB.getGlowMatBlue().uniforms.glow3.value = v
-        })
-        gui.add(glowPar, 'smooth1').min(0).max(2).onChange(v=>{
-            BB.getGlowMatBlue().uniforms.smooth1.value = v
-        })
-        gui.add(glowPar, 'smooth2').min(0).max(2).onChange(v=>{
-            BB.getGlowMatBlue().uniforms.smooth2.value = v
-        })
-
-
-        
-
         particleG1 = new THREE.Group()
         scene.add(particleG1)
         particleG1.position.copy(fireBall1.position)
 
         particleG2 = new THREE.Group()
-       // scene.add(particleG2)
-       // particleG2.position.copy(fireBall2.position)
-
 
         generateParticles(0.75, 0.25, 8, particleG1)
         generateParticles(0.78, 0.24, 9, particleG1)
         generateParticles(0.81, 0.22, 11, particleG1)
         generateParticles(0.83, 0.27, 7, particleG1)
-
-       /*  generateParticles(0.55, 0.05, 8, particleG2)
-        generateParticles(0.58, 0.04, 9, particleG2)
-        generateParticles(0.61, 0.02, 11, particleG2)
-        generateParticles(0.63, 0.07, 7, particleG2) */
 
         const dracoLoader = new DRACOLoader(loadingManager)
         dracoLoader.setDecoderPath('./lib/draco/')
@@ -312,7 +276,6 @@ class Stage{
             model.name = 'GLTF'
             model.scale.set(0)
             model.position.y = -6
-            //camera.position.z = 16
 
             //Animate RIG
             const animations = gltf.animations
