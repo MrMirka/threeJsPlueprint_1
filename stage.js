@@ -257,6 +257,31 @@ class Stage{
         fireBall1.scale.set(0.45,0.45,0.45)
 
 
+        const glowPar = {
+            glow1: 0.581,
+            glow2: 0.69,
+            glow3: 1.015 ,
+            smooth1:0.668,
+            smooth2: 0.581,
+        }
+    
+        gui.add(glowPar, 'glow1').min(0).max(2).onChange(v=>{
+            BB.getGlowMatBlue().uniforms.glow1.value = v
+        })
+        gui.add(glowPar, 'glow2').min(0).max(2).onChange(v=>{
+            BB.getGlowMatBlue().uniforms.glow2.value = v
+        })
+        gui.add(glowPar, 'glow3').min(0).max(2).onChange(v=>{
+            BB.getGlowMatBlue().uniforms.glow3.value = v
+        })
+        gui.add(glowPar, 'smooth1').min(0).max(2).onChange(v=>{
+            BB.getGlowMatBlue().uniforms.smooth1.value = v
+        })
+        gui.add(glowPar, 'smooth2').min(0).max(2).onChange(v=>{
+            BB.getGlowMatBlue().uniforms.smooth2.value = v
+        })
+
+
         
 
         particleG1 = new THREE.Group()
@@ -443,12 +468,10 @@ function tick(){
         //rig.skeleton.bones[25].rotation.x = mouseXY.x
         //rig.skeleton.bones[25].rotation.y = mouseXY.y * 0.8 + 0.2
 
-        let shiftY = mouseXY.y * 1.3 - cameraRig.rotation.y * 0.008
-        let shiftX = mouseXY.x  * 1.15 - cameraRig.rotation.x * 0.004
+        let shiftY = mouseXY.y * 1.3 - Math.cos(cameraRig.rotation.y * 5.9) * 0.8
+        let shiftX = mouseXY.x  * 1.15 - Math.sin(cameraRig.rotation.x * 10.9) * 0.4
         rig.skeleton.bones[25].rotation.y += ( shiftY ) * 0.1 - 0.15
-        rig.skeleton.bones[25].rotation.x += ( shiftX ) * 0.5
-
-        console.log(shiftX)
+        rig.skeleton.bones[25].rotation.x += ( shiftX * 0.89 ) * 0.5
     }
 
    count += 0.1
@@ -490,6 +513,8 @@ function tick(){
         BB.getColorMatPurple().uniforms.uPerelin.value = cubeRenderTarget.texture
     }
 
+
+    
 
     
     

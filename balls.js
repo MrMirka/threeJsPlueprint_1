@@ -7,7 +7,7 @@ import {glow_vertex_shader} from './lib/shaders/glow_v.js'
 import {glow_fragment_shader} from './lib/shaders/glow_f.js'
 import { CompressedTextureLoader } from './lib/three/build/three.module.js'
 
-let clock, mat, colorMat, glowMat, geoGlow, colorMatBlue, colorMatPurple
+let clock, mat, colorMat, glowMat, glowMatBlue,geoGlow, colorMatBlue, colorMatPurple
 
 let ball1, ball2, ball3
 
@@ -52,6 +52,10 @@ class TheBALLS {
         return glowMat
     }
 
+    getGlowMatBlue(){
+        return glowMatBlue
+    }
+
     getGlowPosition(){
         return geoGlow
     }
@@ -86,23 +90,24 @@ function addColorBall(T, group){
             uPerelin: { value: null },
             mouseX: {value: 0},
             mouseY: {value: 0},
-            colorIndex: 0
+            colorIndex: 0,
+            fresnel: {value: 0.9}
         }
     })
     
     colorMatBlue = colorMat.clone()
     colorMatBlue.uniforms.colorIndex.value = 1
+    colorMatBlue.uniforms.fresnel.value = 2.5
     const mesh = new T.Mesh(geo, colorMat)
     let mesh2 = new T.Mesh(geo, colorMatBlue)
     colorMatPurple = colorMat.clone()
     colorMatPurple.uniforms.colorIndex.value = 2
+    colorMatPurple.uniforms.fresnel.value = 2.1
     let mesh3 = new T.Mesh(geo, colorMatPurple)
     mesh.position.set(0,0.7,0)
     mesh2.position.set(0,0.7,0)
     mesh3.position.set(0,0.7,0)
 
-    //mesh2.position.set(-0.8,-0.5,0)
-   // mesh3.position.set(0.8,-0.5,0)
 
     ball1.name = 'ball1'
     ball2.name = 'ball2'
@@ -117,7 +122,7 @@ function addColorBall(T, group){
 
 //Glow Ball
 function addGlowBall(T, group){
-    const geo = new T.SphereGeometry(0.75, 30, 30)
+    const geo = new T.SphereGeometry(0.85, 30, 30)
     glowMat = new T.ShaderMaterial({
         side: T.BackSide,
         transparent: true,
@@ -125,11 +130,11 @@ function addGlowBall(T, group){
         fragmentShader: glow_fragment_shader,
         uniforms: {
             time: { value: 0 },
-            glow1: { value: 0.581 },
-            glow2: { value: 0.69 },
-            glow3: { value: 1.015 },
-            smooth1: { value: 0.668 },
-            smooth2: { value: 0.581 },
+            glow1: { value: 0.23 },
+            glow2: { value: 0.95 },
+            glow3: { value: 1.1 },
+            smooth1: { value: 0.3 },
+            smooth2: { value: 0.93 },
             colorIndex: 0
         }
     })
@@ -137,11 +142,22 @@ function addGlowBall(T, group){
     geoGlow = new T.Mesh(geo, glowMat)
     geoGlow.rotation.x -=  0.2
     
-    let glowMatBlue = glowMat.clone()
+    glowMatBlue = glowMat.clone()
     glowMatBlue.uniforms.colorIndex.value = 1
+    glowMatBlue.uniforms.glow1.value = 0.23
+    glowMatBlue.uniforms.glow2.value = 0.95
+    glowMatBlue.uniforms.glow3.value = 1.1
+    glowMatBlue.uniforms.smooth1.value = 0.3
+    glowMatBlue.uniforms.smooth2.value = 0.93
+
     let geoGlow2 = new T.Mesh(geo, glowMatBlue)
     let glowMatPurple = glowMat.clone()
     glowMatPurple.uniforms.colorIndex.value = 2
+    glowMatPurple.uniforms.glow1.value = 0.23
+    glowMatPurple.uniforms.glow2.value = 0.95
+    glowMatPurple.uniforms.glow3.value = 1.1
+    glowMatPurple.uniforms.smooth1.value = 0.3
+    glowMatPurple.uniforms.smooth2.value = 0.93
     let geoGlow3 = new T.Mesh(geo, glowMatPurple)
 
     geoGlow.position.set(0,0.75,0)
