@@ -7,7 +7,7 @@ import {glow_vertex_shader} from './lib/shaders/glow_v.js'
 import {glow_fragment_shader} from './lib/shaders/glow_f.js'
 import { CompressedTextureLoader } from './lib/three/build/three.module.js'
 
-let clock, mat, colorMat, glowMat, geoGlow
+let clock, mat, colorMat, glowMat, geoGlow, colorMatBlue, colorMatPurple
 
 let ball1, ball2, ball3
 
@@ -38,6 +38,14 @@ class TheBALLS {
 
     getColorMat(){
         return colorMat
+    }
+
+    getColorMatBlue(){
+        return colorMatBlue
+    }
+
+    getColorMatPurple(){
+        return colorMatPurple
     }
 
     getGlowMat(){
@@ -78,11 +86,17 @@ function addColorBall(T, group){
             uPerelin: { value: null },
             mouseX: {value: 0},
             mouseY: {value: 0},
+            colorIndex: 0
         }
     })
+    
+    colorMatBlue = colorMat.clone()
+    colorMatBlue.uniforms.colorIndex.value = 1
     const mesh = new T.Mesh(geo, colorMat)
-    let mesh2 = new T.Mesh(geo, colorMat)
-    let mesh3 = new T.Mesh(geo, colorMat)
+    let mesh2 = new T.Mesh(geo, colorMatBlue)
+    colorMatPurple = colorMat.clone()
+    colorMatPurple.uniforms.colorIndex.value = 2
+    let mesh3 = new T.Mesh(geo, colorMatPurple)
     mesh.position.set(0,0.7,0)
     mesh2.position.set(0,0.7,0)
     mesh3.position.set(0,0.7,0)
@@ -116,13 +130,19 @@ function addGlowBall(T, group){
             glow3: { value: 1.015 },
             smooth1: { value: 0.668 },
             smooth2: { value: 0.581 },
+            colorIndex: 0
         }
     })
+
     geoGlow = new T.Mesh(geo, glowMat)
     geoGlow.rotation.x -=  0.2
-
-    let geoGlow2 = new T.Mesh(geo, glowMat)
-    let geoGlow3 = new T.Mesh(geo, glowMat)
+    
+    let glowMatBlue = glowMat.clone()
+    glowMatBlue.uniforms.colorIndex.value = 1
+    let geoGlow2 = new T.Mesh(geo, glowMatBlue)
+    let glowMatPurple = glowMat.clone()
+    glowMatPurple.uniforms.colorIndex.value = 2
+    let geoGlow3 = new T.Mesh(geo, glowMatPurple)
 
     geoGlow.position.set(0,0.75,0)
     geoGlow2.position.set(0,0.75,0)

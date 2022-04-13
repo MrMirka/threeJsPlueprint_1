@@ -442,8 +442,13 @@ function tick(){
         rig.skeleton.bones[25].position.z = 1.21
         //rig.skeleton.bones[25].rotation.x = mouseXY.x
         //rig.skeleton.bones[25].rotation.y = mouseXY.y * 0.8 + 0.2
-        rig.skeleton.bones[25].rotation.y += ( mouseXY.y * 2.3 - cameraRig.rotation.x * 0.2 ) * 0.1 - 0.15
-        rig.skeleton.bones[25].rotation.x += ( mouseXY.x  * 2.15 - cameraRig.rotation.y * 0.1 ) * 0.5
+
+        let shiftY = mouseXY.y * 1.3 - cameraRig.rotation.y * 0.008
+        let shiftX = mouseXY.x  * 1.15 - cameraRig.rotation.x * 0.004
+        rig.skeleton.bones[25].rotation.y += ( shiftY ) * 0.1 - 0.15
+        rig.skeleton.bones[25].rotation.x += ( shiftX ) * 0.5
+
+        console.log(shiftX)
     }
 
    count += 0.1
@@ -476,9 +481,13 @@ function tick(){
 
     BB.getPerelinMat().uniforms.time.value = count
     BB.getColorMat().uniforms.time.value = count
+    BB.getColorMatBlue().uniforms.time.value = count
+    BB.getColorMatPurple().uniforms.time.value = count
 
     if(cubeRenderTarget!= undefined){
         BB.getColorMat().uniforms.uPerelin.value = cubeRenderTarget.texture
+        BB.getColorMatBlue().uniforms.uPerelin.value = cubeRenderTarget.texture
+        BB.getColorMatPurple().uniforms.uPerelin.value = cubeRenderTarget.texture
     }
 
 
