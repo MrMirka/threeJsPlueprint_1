@@ -31,7 +31,7 @@ let perelinGroup = new THREE.Group()
 
 let ballsBlock = new THREE.Group()
 
-let geo, points
+let geo, points, matLoadNull
 let count = 0
 
 let BB
@@ -87,15 +87,14 @@ class Stage{
 
                //Releaze model
                scene.add(ballsBlock)
-               gsap.to(model.scale, { duration: 1, delay: 0.3, x: 350, y:350, z: 350, onStart: ()=> {
-                updateAllmaterial()
-                 
-                generateParticles(0.75, 0.25, 8, particleG1)
+               
+               scene.add(model)
+               updateAllmaterial()
+               generateParticles(0.75, 0.25, 8, particleG1)
                 generateParticles(0.78, 0.24, 9, particleG1)
                 generateParticles(0.81, 0.22, 11, particleG1)
                 generateParticles(0.83, 0.27, 7, particleG1)
-                 
-               } }) 
+                gsap.to(matLoadNull, { duration: 1, opacity: 0})  
             }, 3000);
         })
     }
@@ -105,6 +104,7 @@ class Stage{
      */
     initScene(){
             scene  = new THREE.Scene()
+            addLoadNull()
             perelinScene  = new THREE.Scene()
             perelinScene.add(perelinGroup)
             scene.add(cameraRig)
@@ -262,14 +262,14 @@ class Stage{
         gltfLoader.load(url, gltf => {
             model = gltf.scene
             model.name = 'GLTF'
-            model.scale.set(0)
+            model.scale.set(350, 350, 350)
             model.position.y = -6
 
             //Animate RIG
             const animations = gltf.animations
             mixer = new THREE.AnimationMixer( model )
             mixer.clipAction(animations[0]).play()
-            scene.add(model)
+            //scene.add(model)
             
             realizeRig(model)
         })
@@ -302,41 +302,6 @@ class Stage{
     /**
      * Loaders
      */
-
-    //Bar
-    initBarLoader(){
-        const logo = new THREE.TextureLoader().load('./textures/loader/dota.png')
-        logo.encoding = THREE.sRGBEncoding
-        const geo = new THREE.PlaneGeometry(3,3,1,1)
-        const mat = new THREE.MeshBasicMaterial({
-            map: logo,
-            transparent: true,
-            side:THREE.DoubleSide
-        })
-        loader = new THREE.Mesh(geo, mat)
-        loader.scale.set(0.5, 0.5, 0.5)
-        scene.add(loader)
-
-        //BAR
-        const barGeo = new THREE.BoxGeometry(0.25,0.02, 0.0001)
-        const barMat = new THREE.MeshBasicMaterial({color: 0x81583D})
-
-        const barGeoBack = new THREE.BoxGeometry(2.55,0.02, 0.0001)
-        const barMatBack = new THREE.MeshBasicMaterial({
-            color: 0x81583D,
-            transparent: true,
-            opacity: 0.3
-        })
-
-        barMesh = new THREE.Mesh(barGeo, barMat)
-        const barMeshBack = new THREE.Mesh(barGeoBack, barMatBack)
-        barMesh.position.y = - 0.56
-        barMeshBack.position.y = - 0.562
-        barMeshBack.position.z =  -0.02
-        scene.add(barMesh, barMeshBack) 
-    }
-
-    //Circle
     initCircleLoader(){
         const logo = new THREE.TextureLoader(loadingManager).load('./textures/loader/dota_text.png')
         logo.encoding = THREE.sRGBEncoding
@@ -347,6 +312,7 @@ class Stage{
             side:THREE.DoubleSide,
         })
         loader = new THREE.Mesh(geo, matLogo)
+        loader.position.z = 3.5
         loader.name = 'logo_loader'
         const scaleFactor ={value: 0.5}
         loader.scale.set(scaleFactor.value, scaleFactor.value, scaleFactor.value)
@@ -372,6 +338,7 @@ class Stage{
         loaderCircleOut = new THREE.Mesh(circleGeo, matCircleOut)
         loaderCircleIn = new THREE.Mesh(circleGeo, matCircleIn)
         const circleLoaders = new THREE.Group()
+        circleLoaders.position.z = 3.1
         circleLoaders.name = 'circle_loader'
         circleLoaders.add(loaderCircleOut, loaderCircleIn)
         circleLoaders.scale.set(2.8,2.8,2.8)
@@ -445,8 +412,10 @@ function tick(){
 
     //Models
     if(model!=undefined){
+        cameraRig.add(model)
         cameraRig.rotation.x += ( mouseXY.y * 0.07 - cameraRig.rotation.x * 0.4 ) * 0.3
 	    cameraRig.rotation.y += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.5
+
 
         fireBall1.position.y = -0.7
 
@@ -783,7 +752,24 @@ const updateSpotLight = () => {
     group.add(points)
  }
 
+ /**
+  * RIG initializetion
+  */
  function realizeRig(model){
      rig.skeleton = model.children[1].children[0].skeleton
+ }
+
+ /**
+  * Add black plane
+  */
+ function addLoadNull(){
+     const geo = new THREE.PlaneGeometry(20,20)
+     matLoadNull = new THREE.MeshBasicMaterial({
+         color: 0x000000,
+         transparent: true
+        })
+     const mesh = new THREE.Mesh(geo, matLoadNull)
+     mesh.position.z = 3
+     scene.add(mesh)
  }
 export {Stage}
