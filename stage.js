@@ -23,12 +23,9 @@ let matLogo,  matCircleOut, matCircleIn
 let cubeRenderTarget, cubeCamera
 
 let cameraRig = new THREE.Group()
-
 let fireBall1 = new THREE.Group()
 let particleG1 = new THREE.Group()
-
 let perelinGroup = new THREE.Group()
-
 let ballsBlock = new THREE.Group()
 
 let geo, points, matLoadNull
@@ -45,12 +42,6 @@ let particleAlpha = new THREE.TextureLoader().load('./textures/noise/particle_al
 
 //Compose param
 let isCompose = false
- const bloom = {
-     exposure:0.1,
-     bloomStrength: 0.9,
-     bloomThreshold: 0.01,
-     bloomRadius: 1.9
- }
 
 //Mouse coordinate
 let mouseXY = new THREE.Vector2(0,0)
