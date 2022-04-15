@@ -81,10 +81,10 @@ class Stage{
                
                scene.add(model)
                updateAllmaterial()
-               generateParticles(0.75, 0.25, 8, particleG1)
-                generateParticles(0.78, 0.24, 9, particleG1)
-                generateParticles(0.81, 0.22, 11, particleG1)
-                generateParticles(0.83, 0.27, 7, particleG1)
+               generateParticles(0.75, 0.15, 12, particleG1)
+                generateParticles(0.78, 0.14, 14, particleG1)
+                generateParticles(0.81, 0.12, 18, particleG1)
+                generateParticles(0.83, 0.17, 11, particleG1)
                 gsap.to(matLoadNull, { duration: 1, opacity: 0})  
             }, 3000);
         })
@@ -410,17 +410,17 @@ function tick(){
 
         fireBall1.position.y = -0.7
 
-        fireBall1.children[0].position.y = Math.sin(count * 0.07 ) * 1.5 - 0.9
-        fireBall1.children[0].position.x = Math.cos(count * 0.07 ) * 1.5
+        fireBall1.children[0].position.y = Math.cos(count * 0.07 ) * 1.5 - 0.9
+        fireBall1.children[0].position.x = Math.sin(count * 0.07 ) * 1.5
         fireBall1.children[0].rotation.x = -fireBall1.children[0].position.y * 0.01 - 0.11
 
 
-        fireBall1.children[1].position.y = Math.sin(count * 0.07 + 2.2) * 1.5 - 0.9
-        fireBall1.children[1].position.x = Math.cos(count * 0.07 + 2.2) * 1.5 
+        fireBall1.children[1].position.y = Math.cos(count * 0.07 + 2.2) * 1.5 - 0.9
+        fireBall1.children[1].position.x = Math.sin(count * 0.07 + 2.2) * 1.5 
         fireBall1.children[1].rotation.x = -fireBall1.children[1].position.y * 0.01 - 0.11
 
-        fireBall1.children[2].position.y = Math.sin(count * 0.07 + 4.2) * 1.5 - 0.9
-        fireBall1.children[2].position.x = Math.cos(count * 0.07 + 4.2) * 1.5 
+        fireBall1.children[2].position.y = Math.cos(count * 0.07 + 4.2) * 1.5 - 0.9
+        fireBall1.children[2].position.x = Math.sin(count * 0.07 + 4.2) * 1.5 
         fireBall1.children[2].rotation.x = -fireBall1.children[2].position.y * 0.01 - 0.11
 
         fireBall1.position.x += ( mouseXY.x  * 0.15 - cameraRig.rotation.y * 0.3 ) * 0.2
@@ -710,7 +710,7 @@ const updateSpotLight = () => {
  * Particles fireball orbit
  */
  const generateParticles = (radius, particleSize, speed, group) => {
-    geo = new THREE.SphereBufferGeometry(radius, 2, 1)
+    geo = new THREE.SphereBufferGeometry(radius, 3, 2)
     const colors = new Float32Array(geo.attributes.position.array)
 
     for(let i = 0; i < geo.attributes.position.array.length; i++){
@@ -737,9 +737,9 @@ const updateSpotLight = () => {
     points = new THREE.Points(geo, material)
     points.rotation.x = Math.random() * Math.PI
     points.rotation.z = Math.random() * Math.PI
-    points.eulerOrder = 'ZYX';
-    gsap.to(points.rotation, {duration: speed, x: Math.PI * 2, repeat: -1, ease: 'none'})
-    gsap.to(points.rotation, {duration: speed * 1.8, y: Math.PI * 2, repeat: -1, ease: 'none'})
+    //points.eulerOrder = 'ZYX';
+    gsap.to(points.rotation, {duration: speed, x:  -Math.PI * 2, repeat: -1, ease: 'none'})
+    gsap.to(points.rotation, {duration: speed * 1.8, y:  -Math.PI * 2, repeat: -1, ease: 'none'})
     group.add(points)
  }
 
