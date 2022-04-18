@@ -67,6 +67,10 @@ class Stage{
                     logo = item
                 }
                })
+               /**
+                * START POINT
+                * complite loading data and show model
+                */
                //Hide loader
                gsap.to(matLogo, {duration: 1, opacity: 0, onComplete: () => {
                    scene.remove(logo)
